@@ -172,7 +172,37 @@
 - [ ] Add default value: `./fred-data` if not specified
 - [ ] Add default values for all output parameters
 - [ ] Add Pydantic validation for output config
+- [ ] Add `FRED_JOB_RETENTION_HOURS` configuration
 - [ ] Document all configuration options in config.py
+
+### Async Job Management
+- [ ] Create `src/mcp_fred/utils/job_manager.py`
+- [ ] Implement `JobManager` class with in-memory job storage
+- [ ] Implement job ID generation (UUID-based)
+- [ ] Implement job lifecycle management (create, update, complete, fail)
+- [ ] Add job status tracking (accepted, processing, completed, failed)
+- [ ] Add progress tracking (rows fetched, percent complete, elapsed time)
+- [ ] Implement job cleanup (auto-delete after 24 hours)
+- [ ] Add job retention configuration
+- [ ] Write unit tests for job manager
+
+### Background Job Processing
+- [ ] Create `src/mcp_fred/utils/background_worker.py`
+- [ ] Implement background task queue using asyncio
+- [ ] Add worker pool for concurrent job processing
+- [ ] Implement job retry logic for failed requests
+- [ ] Add exponential backoff for rate limit errors
+- [ ] Implement progress callbacks for job updates
+- [ ] Add graceful shutdown for background workers
+- [ ] Write integration tests for background processing
+
+### Async Job Decision Logic
+- [ ] Add size estimation before executing requests
+- [ ] Implement threshold for async vs sync (>10K rows = async)
+- [ ] Add time estimation for operations
+- [ ] Integrate job manager with output handler
+- [ ] Add async mode to all tools that fetch large data
+- [ ] Document async vs sync decision criteria
 
 ---
 
@@ -254,6 +284,26 @@
 - [ ] Add error handling
 - [ ] Write tool documentation
 
+#### Job Management Tools
+- [ ] Create `src/mcp_fred/tools/job_status.py`
+- [ ] Implement `fred_job_status` tool
+- [ ] Add job_id parameter validation
+- [ ] Return comprehensive status (progress, result, error)
+- [ ] Add error handling for invalid job IDs
+- [ ] Write tool documentation
+
+- [ ] Create `src/mcp_fred/tools/job_list.py` (Optional)
+- [ ] Implement `fred_job_list` tool
+- [ ] Add status filtering (completed, processing, failed)
+- [ ] Add pagination/limit support
+- [ ] Write tool documentation
+
+- [ ] Create `src/mcp_fred/tools/job_cancel.py` (Optional)
+- [ ] Implement `fred_job_cancel` tool
+- [ ] Add cancellation logic
+- [ ] Clean up resources for cancelled jobs
+- [ ] Write tool documentation
+
 ---
 
 ## Phase 4: Transport Layer Implementation
@@ -319,10 +369,24 @@
 #### Tool Tests
 - [ ] Test `fred_category` tool operations
 - [ ] Test `fred_release` tool operations
-- [ ] Test `fred_series` tool operations
+- [ ] Test `fred_series` tool operations (including async mode)
 - [ ] Test `fred_source` tool operations
 - [ ] Test `fred_tag` tool operations
-- [ ] Test `fred_maps` tool operations
+- [ ] Test `fred_maps` tool operations (including async mode)
+- [ ] Test `fred_job_status` tool
+- [ ] Test `fred_job_list` tool (optional)
+- [ ] Test `fred_job_cancel` tool (optional)
+
+#### Async Job Tests
+- [ ] Test job creation and ID generation
+- [ ] Test job status transitions (accepted → processing → completed)
+- [ ] Test job failure handling and retry logic
+- [ ] Test job progress tracking
+- [ ] Test job cleanup after retention period
+- [ ] Test background worker task queue
+- [ ] Test concurrent job processing
+- [ ] Test rate limit handling with backoff
+- [ ] Mock large FRED API responses for testing
 
 ### Integration Tests
 - [ ] Test end-to-end STDIO transport

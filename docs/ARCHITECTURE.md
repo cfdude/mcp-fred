@@ -57,7 +57,9 @@ mcp-fred/
 │   │   │   ├── token_estimator.py   # Token counting with tiktoken
 │   │   │   ├── file_writer.py       # CSV/JSON streaming to files
 │   │   │   ├── json_to_csv.py       # JSON to CSV converter
-│   │   │   └── path_resolver.py     # Secure path resolution and validation
+│   │   │   ├── path_resolver.py     # Secure path resolution and validation
+│   │   │   ├── job_manager.py       # Async job management and tracking
+│   │   │   └── background_worker.py # Background job processing
 │   │   └── tools/
 │   │       ├── __init__.py
 │   │       ├── category.py      # MCP tool: fred_category
@@ -207,23 +209,120 @@ async def stream_to_file(
     """
 ```
 
-#### 5. **Immediate Response to AI Agent**
+#### 5. **Async Job Management for Large Requests**
 
-For large requests, return immediate acknowledgment:
+For large datasets, use background job processing with status tracking:
+
+**Job Creation (Immediate Response):**
 
 ```json
 {
-  "status": "processing",
-  "request_id": "uuid-here",
-  "message": "Large dataset detected. Fetching and saving to file...",
-  "estimated_rows": 50000,
+  "status": "accepted",
+  "job_id": "fred-job-a3f2b8c4-20251008-143022",
+  "message": "Large dataset detected. Processing in background...",
+  "estimated_rows": 75000,
+  "estimated_time_seconds": 45,
   "output_mode": "file",
   "project": "economic-analysis",
-  "file_path": "{MCP_CLIENT_ROOT}/fred-data/economic-analysis/series/GNPCA_observations_{timestamp}.csv"
+  "check_status": "Use fred_job_status tool with this job_id"
 }
 ```
 
-Then process in background and update when complete.
+**Job Status Checking:**
+
+AI agent can check status anytime using `fred_job_status` tool:
+
+```python
+# Tool call
+{
+  "tool": "fred_job_status",
+  "job_id": "fred-job-a3f2b8c4-20251008-143022"
+}
+```
+
+**Status Responses:**
+
+**In Progress:**
+```json
+{
+  "job_id": "fred-job-a3f2b8c4-20251008-143022",
+  "status": "processing",
+  "progress": {
+    "rows_fetched": 35000,
+    "estimated_total": 75000,
+    "percent_complete": 47,
+    "elapsed_seconds": 18
+  },
+  "message": "Fetching observations from FRED API..."
+}
+```
+
+**Completed:**
+```json
+{
+  "job_id": "fred-job-a3f2b8c4-20251008-143022",
+  "status": "completed",
+  "duration_seconds": 42,
+  "result": {
+    "file_path": "/Users/username/Documents/fred-data/economic-analysis/series/GNPCA_observations_20251008_143022.csv",
+    "rows_written": 75234,
+    "file_size_mb": 3.2,
+    "format": "csv"
+  },
+  "message": "Data successfully saved to file. Ready for analysis."
+}
+```
+
+**Failed:**
+```json
+{
+  "job_id": "fred-job-a3f2b8c4-20251008-143022",
+  "status": "failed",
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "FRED API rate limit exceeded (120 req/min). Job will retry automatically."
+  },
+  "retry_count": 1,
+  "next_retry_in_seconds": 30
+}
+```
+
+### Async Job Architecture
+
+**Job Storage:**
+```python
+# In-memory job tracking (or Redis for production)
+jobs = {
+    "job_id": {
+        "status": "processing",  # accepted, processing, completed, failed
+        "created_at": datetime,
+        "updated_at": datetime,
+        "request": {...},  # Original request params
+        "progress": {...},
+        "result": {...},
+        "error": {...}
+    }
+}
+```
+
+**Job Lifecycle:**
+1. **Request received** → Estimate size
+2. **If large** → Create job, return job_id immediately
+3. **Background processing** → Fetch from FRED API, write to file
+4. **Update status** → Progress tracking
+5. **Complete** → File saved, status = completed
+6. **AI checks status** → Returns result when ready
+
+**Job Cleanup:**
+- Jobs retained for 24 hours after completion
+- Auto-cleanup of old jobs
+- Configurable retention via `FRED_JOB_RETENTION_HOURS`
+
+**When to Use Async Jobs:**
+- Series observations > 10,000 rows
+- Maps data with shape files
+- Multiple paginated requests required
+- Estimated processing time > 10 seconds
 
 #### 6. **File Formats & JSON to CSV Conversion**
 
@@ -464,6 +563,58 @@ FRED_OUTPUT_FORMAT=csv
 MCP_TRANSPORT=http
 MCP_HTTP_HOST=127.0.0.1
 MCP_HTTP_PORT=8000
+```
+
+---
+
+## Async Job Management Tool
+
+### fred_job_status Tool
+
+Dedicated tool for checking async job status:
+
+```python
+@mcp.tool()
+async def fred_job_status(
+    job_id: str
+) -> dict:
+    """
+    Check the status of a background FRED data job
+
+    Args:
+        job_id: The job ID returned when the request was initiated
+
+    Returns:
+        Job status with progress, result, or error information
+    """
+    pass
+```
+
+### fred_job_list Tool (Optional)
+
+List recent jobs for the current session:
+
+```python
+@mcp.tool()
+async def fred_job_list(
+    status_filter: Optional[str] = None,  # completed, processing, failed
+    limit: int = 10
+) -> dict:
+    """List recent FRED data jobs"""
+    pass
+```
+
+### fred_job_cancel Tool (Optional)
+
+Cancel a running job:
+
+```python
+@mcp.tool()
+async def fred_job_cancel(
+    job_id: str
+) -> dict:
+    """Cancel a running FRED data job"""
+    pass
 ```
 
 ---

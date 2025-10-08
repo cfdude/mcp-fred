@@ -151,6 +151,70 @@ This file tracks all completed development tasks for the MCP-FRED project. Tasks
 
 ---
 
+## Phase 0.3: Async Job Management System (2025-10-08)
+
+### Problem Identification
+- ✅ User identified critical gap: No async job handling for large datasets
+- ✅ FRED data can be very large (100K observations, shape files)
+- ✅ Synchronous processing would block AI agent
+- ✅ Need status checking capability like Snowflake MCP server
+
+### Async Job System Design
+- ✅ **Job ID Generation**: UUID-based identifiers
+- ✅ **Job Lifecycle**: accepted → processing → completed/failed
+- ✅ **Status Tracking**: Progress, elapsed time, estimated completion
+- ✅ **Job Storage**: In-memory tracking (Redis for production)
+- ✅ **Job Retention**: 24 hours configurable via `FRED_JOB_RETENTION_HOURS`
+
+### Job Status Responses Designed
+- ✅ **Immediate Response**: Returns job_id when large dataset detected
+- ✅ **In Progress**: Shows rows_fetched, percent_complete, elapsed_seconds
+- ✅ **Completed**: Returns file_path, rows_written, file_size
+- ✅ **Failed**: Includes error code, retry count, next retry time
+
+### New MCP Tools
+- ✅ `fred_job_status` - Check status of background job (REQUIRED)
+- ✅ `fred_job_list` - List recent jobs (OPTIONAL)
+- ✅ `fred_job_cancel` - Cancel running job (OPTIONAL)
+
+### Architecture Updates
+- ✅ Added async job management section to ARCHITECTURE.md
+- ✅ Designed job lifecycle and status responses
+- ✅ Added thresholds: >10K rows or >10 seconds = async
+- ✅ Added background worker architecture
+- ✅ Added retry logic with exponential backoff for rate limits
+
+### TODO.md Updates
+- ✅ Added Phase 3 async job management tasks (35+ new tasks):
+  - Job manager implementation
+  - Background worker with asyncio task queue
+  - Job retry logic and rate limit handling
+  - Progress tracking and callbacks
+  - Job cleanup and retention
+- ✅ Added job management tool implementation tasks
+- ✅ Added async job testing tasks (9 new test cases)
+
+### Project Structure Updates
+- ✅ Added `utils/job_manager.py` - Job tracking and lifecycle
+- ✅ Added `utils/background_worker.py` - Background task processing
+- ✅ Added `tools/job_status.py` - Status checking tool
+- ✅ Added optional tools: `job_list.py`, `job_cancel.py`
+
+### Key Decisions
+1. **When to use async**: > 10K rows OR estimated time > 10 seconds
+2. **Job storage**: In-memory (simple), Redis optional for production
+3. **Retry logic**: Exponential backoff for rate limits (120 req/min)
+4. **Job retention**: 24 hours default, configurable
+
+### User Experience Flow
+1. AI requests large dataset (e.g., 75K observations)
+2. Server estimates size, creates job, returns job_id immediately
+3. AI tells user: "Processing in background, job ID: fred-job-..."
+4. User can ask: "Is it ready?" → AI checks status
+5. When complete: AI gets file path for analysis
+
+---
+
 ## Next Steps
 
 See `TODO.md` for upcoming development tasks. The next phase is:
