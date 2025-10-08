@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Phase 1 Documentation - 2025-10-08)
+- **DEVELOPMENT_GUIDE.md** - Complete developer and AI agent setup guide
+  - Prerequisites: Python 3.11+, Git, IDE setup
+  - Environment setup: venv, dependencies, .env configuration
+  - Development workflow: testing (80% coverage), debugging, git conventions
+  - IDE configuration examples for VS Code and PyCharm
+  - Claude Desktop MCP configuration examples
+  - Common development tasks (adding tools, endpoints, utilities)
+  - Testing philosophy: unit tests primary, mock FRED API, no E2E tests
+- **DEPENDENCIES.md** - Detailed rationale for all 11 dependencies
+  - Why each dependency was chosen over alternatives
+  - Size analysis: ~35 MB production, ~60 MB with dev dependencies
+  - Tiktoken justification: 2.7 MB acceptable for accurate token counting
+  - Version pinning strategy and security update process
+  - Dependency graph and quick reference
+- **Error handling patterns in ARCHITECTURE.md**
+  - 4 comprehensive patterns: API client, MCP tool, file system, async job
+  - Error code reference table with 14 standardized codes
+  - Full code examples for each pattern
+  - Logging and user feedback examples
+
+### Changed (Phase 1 Documentation - 2025-10-08)
+- **Testing Strategy Defined**: 80% code coverage minimum, unit tests focus
+- **Mocking Strategy**: Mock FRED API responses, no real API calls in tests
+
+### Decided (Phase 1 Documentation - 2025-10-08)
+- **No E2E Tests**: MCP product doesn't require end-to-end testing
+- **Error Handling**: Document specific patterns we want to follow consistently
+- **Troubleshooting**: Defer to Phase 6, keep it basic (API key, permissions, config)
+
 ### Added (Phase 0.5 - 2025-10-08)
 - **Documentation review process** integrated into all 8 phases of TODO.md
 - **Pre-phase documentation review sections** with 70+ specific questions
