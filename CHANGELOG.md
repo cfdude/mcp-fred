@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Phase 0.5 - 2025-10-08)
+- **Documentation review process** integrated into all 8 phases of TODO.md
+- **Pre-phase documentation review sections** with 70+ specific questions
+- **7-step documentation workflow** (review → analyze → recommend → approve → create → verify → proceed)
+- **CONTEXT.md** - Quick start guide for new AI contexts
+  - Project overview with current status
+  - Key architectural decisions with user feedback quotes
+  - Documentation navigation map
+  - File location reference
+  - Critical constraints and patterns
+  - Development workflow
+- **API_MAPPING.md** - Complete FRED API to MCP tool mapping
+  - All 50+ FRED endpoints → 12 MCP tools
+  - Tool call examples for each operation
+  - Critical operations marked (Series, Maps)
+  - Utility components reference
+  - Response format patterns
+  - Implementation checklist
+- **TODO.md cross-references** - Every section links to architecture docs
+- **Documentation quality standards** - 8 standards for all documentation
+
+### Changed (Phase 0.5 - 2025-10-08)
+- **TODO.md workflow** - Documentation review REQUIRED before each phase
+- **Development process** - User approval required for documentation changes
+- **Notes section** - Added comprehensive documentation guidelines
+
+### Decided (Phase 0.5 - 2025-10-08)
+- **Documentation-first approach** - Analyze and recommend docs before implementation
+- **Self-contained documentation** - No dependency on external tools (Jira, Confluence)
+- **Context continuity strategy** - New AI sessions can start from comprehensive docs
+- **User control** - Approval required for all documentation proposals
+
 ### Added (Phase 0.4 - 2025-10-08)
 - **Conservative token estimation strategy**
   - Reduced safe thresholds from 70% to 25% of total context capacity

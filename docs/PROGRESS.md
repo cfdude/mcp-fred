@@ -278,6 +278,70 @@ This file tracks all completed development tasks for the MCP-FRED project. Tasks
 
 ---
 
+## Phase 0.5: Documentation Review Process Integration (2025-10-08)
+
+### User Request
+- ✅ User requested reminders in TODO.md for documentation review at each phase
+- ✅ Ensure opportunity to create/analyze/recommend documentation before each phase
+- ✅ Maintain comprehensive documentation without external tools
+
+### Documentation Review Sections Added
+- ✅ **Phase 1**: Project Setup (5 questions, Priority 2 docs from Phase 0.4)
+- ✅ **Phase 2**: API Client (7 questions about patterns and examples)
+- ✅ **Phase 3**: Utilities (8 questions about security and performance)
+- ✅ **Phase 4**: Tool Layer (10 questions, critical operations marked)
+- ✅ **Phase 4**: Transport (8 questions about protocols and deployment)
+- ✅ **Phase 5**: Testing (10 questions, critical test areas)
+- ✅ **Phase 6**: Documentation & Polish (12 questions, audit checklist)
+- ✅ **Phase 7**: Deployment (10 questions, release checklist)
+- ✅ **Phase 8**: Enhancements (10 questions, enhancement strategy)
+
+### Documentation Review Process (7 Steps)
+1. **Review**: Read all relevant existing documentation
+2. **Analyze**: Identify gaps, needed updates, and new documentation
+3. **Recommend**: Present specific documentation proposals to user
+4. **Approve**: Wait for user approval (REQUIRED before proceeding)
+5. **Create**: Implement approved documentation changes
+6. **Verify**: Ensure all cross-references and links work correctly
+7. **Proceed**: Only then begin phase implementation
+
+### Each Review Section Contains
+- ✅ Checkbox tasks for systematic review
+- ✅ Specific questions to answer (5-12 per phase)
+- ✅ Phase-specific critical areas and notes
+- ✅ Links to relevant existing documentation
+- ✅ Clear user approval requirement
+
+### Updated Notes Section in TODO.md
+- ✅ Development Workflow (documentation-first approach)
+- ✅ Documentation Review Process (7 steps detailed)
+- ✅ Why Documentation Reviews Matter (6 reasons)
+- ✅ Documentation Quality Standards (8 standards)
+
+### Documentation Created
+- ✅ **CONTEXT.md** - Quick start guide for new AI contexts
+- ✅ **API_MAPPING.md** - Complete FRED API → Tools → Files mapping
+- ✅ **TODO.md enhancements** - Cross-references and review sections
+
+### Key Benefits
+1. **Proactive Documentation**: AI analyzes and recommends docs before each phase
+2. **Context Continuity**: New AI sessions have complete information
+3. **User Control**: Approval required before creating documentation
+4. **Quality Assurance**: Systematic review prevents gaps
+5. **Self-Contained**: No dependency on external tools (Jira, Confluence)
+6. **Comprehensive Coverage**: 70+ specific questions across 8 phases
+
+### Statistics
+- **Total Review Sections**: 8 (one per phase)
+- **Total Questions**: 70+ specific documentation considerations
+- **Total Commits**: 2 (context navigation + review process)
+- **Documentation Files**: 3 new/updated (CONTEXT.md, API_MAPPING.md, TODO.md)
+
+### User Quote (Paraphrased)
+> "Let's put reminders in the todo.md so we take this opportunity again to create additional documentation (or at least analyze and recommend) as we approach each phase of development"
+
+---
+
 ## Next Steps
 
 See `TODO.md` for upcoming development tasks. The next phase is:
