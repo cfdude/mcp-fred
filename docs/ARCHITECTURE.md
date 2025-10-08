@@ -939,8 +939,12 @@ class FREDClient:
 2. **API Errors:** FRED API returns error response (400, 401, 404, 429, 500)
 3. **Network Errors:** Connection failures, timeouts
 4. **Validation Errors:** Invalid parameters passed to tools
+5. **File System Errors:** Permission denied, disk full, path not found
+6. **Job Errors:** Job not found, job failed, job timeout
 
 ### Error Response Format
+
+All errors follow a consistent JSON structure:
 
 ```json
 {
@@ -953,6 +957,453 @@ class FREDClient:
     }
   }
 }
+```
+
+### Error Handling Patterns
+
+#### Pattern 1: API Client Error Handling
+
+```python
+# src/mcp_fred/api/client.py
+
+import httpx
+from typing import Dict, Any
+from pydantic import ValidationError
+
+class FREDAPIError(Exception):
+    """Base exception for FRED API errors"""
+    def __init__(self, code: str, message: str, details: Dict[str, Any] = None):
+        self.code = code
+        self.message = message
+        self.details = details or {}
+        super().__init__(self.message)
+
+class FREDClient:
+    async def get(self, endpoint: str, params: dict) -> dict:
+        """Make GET request to FRED API with comprehensive error handling"""
+        params['api_key'] = self.api_key
+
+        try:
+            response = await self.client.get(
+                f"{self.base_url}{endpoint}",
+                params=params,
+                timeout=30.0
+            )
+            response.raise_for_status()
+            return response.json()
+
+        except httpx.HTTPStatusError as e:
+            # Handle HTTP errors with specific messages
+            status_code = e.response.status_code
+
+            if status_code == 400:
+                raise FREDAPIError(
+                    code="INVALID_REQUEST",
+                    message="Invalid parameters provided to FRED API",
+                    details={
+                        "endpoint": endpoint,
+                        "params": params,
+                        "status_code": 400
+                    }
+                )
+            elif status_code == 401:
+                raise FREDAPIError(
+                    code="INVALID_API_KEY",
+                    message="FRED API key is invalid or missing",
+                    details={"status_code": 401}
+                )
+            elif status_code == 404:
+                raise FREDAPIError(
+                    code="NOT_FOUND",
+                    message=f"Resource not found: {endpoint}",
+                    details={"endpoint": endpoint, "status_code": 404}
+                )
+            elif status_code == 429:
+                raise FREDAPIError(
+                    code="RATE_LIMIT_EXCEEDED",
+                    message="FRED API rate limit exceeded (120 req/min)",
+                    details={"status_code": 429, "retry_after": 60}
+                )
+            elif status_code >= 500:
+                raise FREDAPIError(
+                    code="SERVER_ERROR",
+                    message="FRED API server error",
+                    details={"status_code": status_code}
+                )
+            else:
+                raise FREDAPIError(
+                    code="HTTP_ERROR",
+                    message=f"HTTP error {status_code}",
+                    details={"status_code": status_code}
+                )
+
+        except httpx.TimeoutException:
+            raise FREDAPIError(
+                code="TIMEOUT",
+                message="Request to FRED API timed out",
+                details={"endpoint": endpoint, "timeout_seconds": 30}
+            )
+
+        except httpx.NetworkError as e:
+            raise FREDAPIError(
+                code="NETWORK_ERROR",
+                message="Network error connecting to FRED API",
+                details={"error": str(e)}
+            )
+
+        except ValidationError as e:
+            raise FREDAPIError(
+                code="VALIDATION_ERROR",
+                message="Response validation failed",
+                details={"errors": e.errors()}
+            )
+```
+
+#### Pattern 2: MCP Tool Error Handling
+
+```python
+# src/mcp_fred/tools/series.py
+
+from typing import Dict, Any
+from pydantic import BaseModel, ValidationError
+
+class SeriesToolParams(BaseModel):
+    operation: str
+    series_id: str | None = None
+    output: str = "auto"
+    format: str = "csv"
+    project: str | None = None
+
+@mcp.tool()
+async def fred_series(
+    operation: str,
+    series_id: str | None = None,
+    **kwargs
+) -> Dict[str, Any]:
+    """
+    FRED Series operations with comprehensive error handling
+
+    Returns:
+        Success response or error response in standard format
+    """
+    try:
+        # Validate parameters
+        params = SeriesToolParams(
+            operation=operation,
+            series_id=series_id,
+            **kwargs
+        )
+
+        # Validate operation type
+        valid_operations = [
+            "get", "search", "get_categories", "get_observations",
+            "get_release", "get_tags", "search_tags",
+            "search_related_tags", "get_updates", "get_vintage_dates"
+        ]
+
+        if params.operation not in valid_operations:
+            return {
+                "error": {
+                    "code": "INVALID_OPERATION",
+                    "message": f"Invalid operation: {operation}",
+                    "details": {
+                        "valid_operations": valid_operations
+                    }
+                }
+            }
+
+        # Validate series_id for operations that require it
+        requires_series_id = [
+            "get", "get_categories", "get_observations",
+            "get_release", "get_tags", "get_vintage_dates"
+        ]
+
+        if params.operation in requires_series_id and not params.series_id:
+            return {
+                "error": {
+                    "code": "MISSING_PARAMETER",
+                    "message": f"Operation '{operation}' requires series_id",
+                    "details": {
+                        "required_parameter": "series_id",
+                        "operation": operation
+                    }
+                }
+            }
+
+        # Execute operation
+        if params.operation == "get_observations":
+            result = await get_series_observations(
+                series_id=params.series_id,
+                output=params.output,
+                format=params.format,
+                project=params.project
+            )
+            return result
+
+        # ... other operations
+
+    except ValidationError as e:
+        return {
+            "error": {
+                "code": "VALIDATION_ERROR",
+                "message": "Parameter validation failed",
+                "details": {"errors": e.errors()}
+            }
+        }
+
+    except FREDAPIError as e:
+        # Pass through API errors
+        return {
+            "error": {
+                "code": e.code,
+                "message": e.message,
+                "details": e.details
+            }
+        }
+
+    except Exception as e:
+        # Catch-all for unexpected errors
+        return {
+            "error": {
+                "code": "INTERNAL_ERROR",
+                "message": "Internal server error",
+                "details": {
+                    "error_type": type(e).__name__,
+                    "error_message": str(e)
+                }
+            }
+        }
+```
+
+#### Pattern 3: File System Error Handling
+
+```python
+# src/mcp_fred/utils/path_resolver.py
+
+import os
+from pathlib import Path
+
+class PathSecurityError(Exception):
+    """Raised when path validation fails for security reasons"""
+    pass
+
+class PathResolver:
+    def __init__(self, storage_dir: str):
+        self.storage_dir = Path(storage_dir).resolve()
+
+    def resolve_path(self, project: str, filename: str) -> Path:
+        """
+        Resolve and validate file path with comprehensive error handling
+
+        Raises:
+            PathSecurityError: If path validation fails
+            PermissionError: If write permissions are denied
+            OSError: If filesystem errors occur
+        """
+        try:
+            # Validate storage directory exists
+            if not self.storage_dir.exists():
+                try:
+                    self.storage_dir.mkdir(parents=True, mode=0o755)
+                except PermissionError:
+                    raise PathSecurityError(
+                        f"No permission to create storage directory: {self.storage_dir}"
+                    )
+                except OSError as e:
+                    raise PathSecurityError(
+                        f"Cannot create storage directory: {e}"
+                    )
+
+            # Sanitize project name
+            safe_project = self._sanitize_name(project)
+            if not safe_project:
+                raise PathSecurityError(
+                    f"Invalid project name: {project}"
+                )
+
+            # Sanitize filename
+            safe_filename = self._sanitize_name(filename)
+            if not safe_filename:
+                raise PathSecurityError(
+                    f"Invalid filename: {filename}"
+                )
+
+            # Construct path
+            project_dir = self.storage_dir / safe_project
+            file_path = project_dir / safe_filename
+
+            # Resolve to absolute path
+            resolved_path = file_path.resolve()
+
+            # Security check: Ensure path is within storage directory
+            if not str(resolved_path).startswith(str(self.storage_dir)):
+                raise PathSecurityError(
+                    f"Path traversal detected: {file_path}"
+                )
+
+            # Create project directory if needed
+            if not project_dir.exists():
+                try:
+                    project_dir.mkdir(parents=True, mode=0o755)
+                except PermissionError:
+                    raise PathSecurityError(
+                        f"No permission to create project directory: {project_dir}"
+                    )
+
+            # Check write permissions
+            if not os.access(project_dir, os.W_OK):
+                raise PermissionError(
+                    f"No write permission for directory: {project_dir}"
+                )
+
+            return resolved_path
+
+        except PathSecurityError:
+            raise  # Re-raise security errors
+        except PermissionError:
+            raise  # Re-raise permission errors
+        except Exception as e:
+            raise OSError(f"Path resolution failed: {e}")
+
+    def _sanitize_name(self, name: str) -> str:
+        """Sanitize filename/project name"""
+        # Remove dangerous characters
+        safe_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")
+        sanitized = ''.join(c for c in name if c in safe_chars)
+
+        # Check for reserved names (Windows)
+        reserved = {'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'LPT1'}
+        if sanitized.upper() in reserved:
+            return ""
+
+        return sanitized
+```
+
+#### Pattern 4: Async Job Error Handling
+
+```python
+# src/mcp_fred/utils/job_manager.py
+
+from enum import Enum
+from datetime import datetime
+from typing import Dict, Any
+
+class JobStatus(Enum):
+    ACCEPTED = "accepted"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+class JobManager:
+    def get_job_status(self, job_id: str) -> Dict[str, Any]:
+        """
+        Get job status with error handling
+
+        Returns:
+            Job status dict or error response
+        """
+        try:
+            # Check if job exists
+            if job_id not in self.jobs:
+                return {
+                    "error": {
+                        "code": "JOB_NOT_FOUND",
+                        "message": f"Job not found: {job_id}",
+                        "details": {
+                            "job_id": job_id,
+                            "suggestion": "Job may have expired (24 hour retention)"
+                        }
+                    }
+                }
+
+            job = self.jobs[job_id]
+
+            # Return status based on job state
+            if job['status'] == JobStatus.FAILED:
+                return {
+                    "job_id": job_id,
+                    "status": "failed",
+                    "error": {
+                        "code": job['error_code'],
+                        "message": job['error_message'],
+                        "retry_count": job.get('retry_count', 0),
+                        "next_retry_in_seconds": job.get('next_retry', None)
+                    },
+                    "duration_seconds": job.get('duration_seconds', 0)
+                }
+
+            elif job['status'] == JobStatus.COMPLETED:
+                return {
+                    "job_id": job_id,
+                    "status": "completed",
+                    "duration_seconds": job['duration_seconds'],
+                    "result": job['result']
+                }
+
+            elif job['status'] == JobStatus.PROCESSING:
+                return {
+                    "job_id": job_id,
+                    "status": "processing",
+                    "progress": job['progress']
+                }
+
+            else:  # ACCEPTED
+                return {
+                    "job_id": job_id,
+                    "status": "accepted",
+                    "message": "Job queued for processing"
+                }
+
+        except Exception as e:
+            return {
+                "error": {
+                    "code": "JOB_STATUS_ERROR",
+                    "message": "Failed to retrieve job status",
+                    "details": {"error": str(e)}
+                }
+            }
+```
+
+### Error Code Reference
+
+| Code | HTTP Status | Meaning | User Action |
+|------|-------------|---------|-------------|
+| `INVALID_API_KEY` | 401 | FRED API key is invalid | Check FRED_API_KEY environment variable |
+| `RATE_LIMIT_EXCEEDED` | 429 | Too many requests (120/min) | Wait 60 seconds, or use async jobs |
+| `NOT_FOUND` | 404 | Series/resource not found | Verify series ID exists in FRED |
+| `INVALID_REQUEST` | 400 | Bad request parameters | Check parameter format and values |
+| `SERVER_ERROR` | 500 | FRED API server error | Retry later, issue with FRED |
+| `TIMEOUT` | 408 | Request timed out | Check network, retry |
+| `NETWORK_ERROR` | 503 | Cannot connect to FRED | Check internet connection |
+| `VALIDATION_ERROR` | 422 | Parameter validation failed | Fix parameter types/values |
+| `INVALID_OPERATION` | 400 | Unknown operation | Use valid operation name |
+| `MISSING_PARAMETER` | 400 | Required parameter missing | Provide required parameter |
+| `PATH_SECURITY_ERROR` | 403 | Path validation failed | Check project/filename format |
+| `PERMISSION_ERROR` | 403 | No write permission | Check FRED_STORAGE_DIR permissions |
+| `JOB_NOT_FOUND` | 404 | Job ID not found | Job expired (24hr retention) |
+| `INTERNAL_ERROR` | 500 | Unexpected server error | Report bug with details |
+
+### Logging Error Details
+
+All errors should be logged for debugging:
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+try:
+    result = await fred_api_call()
+except FREDAPIError as e:
+    logger.error(
+        f"FRED API error: {e.code}",
+        extra={
+            "error_code": e.code,
+            "error_message": e.message,
+            "details": e.details
+        }
+    )
+    raise
 ```
 
 ---
