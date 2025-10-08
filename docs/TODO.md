@@ -2,9 +2,17 @@
 
 **Last Updated:** 2025-10-08
 
+**Quick Links:**
+- [CONTEXT.md](CONTEXT.md) - Start here for new contexts
+- [API_MAPPING.md](API_MAPPING.md) - FRED API → Tools → Files mapping
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Complete system design
+- [PROGRESS.md](PROGRESS.md) - Completed work
+
 ---
 
 ## Phase 1: Project Setup & Infrastructure
+
+**[See: ARCHITECTURE.md → Project Structure](ARCHITECTURE.md#project-structure)**
 
 ### Project Initialization
 - [ ] Create project directory structure
@@ -32,6 +40,10 @@
 
 ## Phase 2: Core API Client Implementation
 
+**[See: ARCHITECTURE.md → API Client Architecture](ARCHITECTURE.md#api-client-architecture)**
+**[See: FRED_API_REFERENCE.md](FRED_API_REFERENCE.md) - Complete FRED API documentation**
+**[See: API_MAPPING.md](API_MAPPING.md) - All endpoint mappings**
+
 ### Base HTTP Client
 - [ ] Create `src/mcp_fred/api/client.py` - Base FRED API client
 - [ ] Implement authentication with API key
@@ -51,7 +63,11 @@
 
 ### Endpoint Implementations
 
+**[See: API_MAPPING.md](API_MAPPING.md) for complete endpoint → method mapping**
+
 #### Category Endpoints
+
+**[See: API_MAPPING.md → Category Endpoints](API_MAPPING.md#category-endpoints)**
 - [ ] Create `src/mcp_fred/api/endpoints/category.py`
 - [ ] Implement `get_category(category_id)`
 - [ ] Implement `get_category_children(category_id)`
@@ -61,6 +77,8 @@
 - [ ] Implement `get_category_related_tags(category_id)`
 
 #### Release Endpoints
+
+**[See: API_MAPPING.md → Release Endpoints](API_MAPPING.md#release-endpoints)**
 - [ ] Create `src/mcp_fred/api/endpoints/release.py`
 - [ ] Implement `get_releases()` (plural)
 - [ ] Implement `get_releases_dates()`
@@ -73,6 +91,8 @@
 - [ ] Implement `get_release_tables(release_id)`
 
 #### Series Endpoints
+
+**[See: API_MAPPING.md → Series Endpoints](API_MAPPING.md#series-endpoints)** ⚠️ CRITICAL: Large data handling
 - [ ] Create `src/mcp_fred/api/endpoints/series.py`
 - [ ] Implement `get_series(series_id)`
 - [ ] Implement `search_series(search_text)`
@@ -86,18 +106,24 @@
 - [ ] Implement `get_series_vintage_dates(series_id)`
 
 #### Source Endpoints
+
+**[See: API_MAPPING.md → Source Endpoints](API_MAPPING.md#source-endpoints)**
 - [ ] Create `src/mcp_fred/api/endpoints/source.py`
 - [ ] Implement `get_sources()` (plural)
 - [ ] Implement `get_source(source_id)` (singular)
 - [ ] Implement `get_source_releases(source_id)`
 
 #### Tag Endpoints
+
+**[See: API_MAPPING.md → Tag Endpoints](API_MAPPING.md#tag-endpoints)**
 - [ ] Create `src/mcp_fred/api/endpoints/tag.py`
 - [ ] Implement `get_tags()`
 - [ ] Implement `get_tags_series(tag_names)`
 - [ ] Implement `get_related_tags(tag_names)`
 
 #### Maps Endpoints
+
+**[See: API_MAPPING.md → Maps Endpoints](API_MAPPING.md#maps-endpoints)** ⚠️ CRITICAL: Large data handling
 - [ ] Create `src/mcp_fred/api/endpoints/maps.py`
 - [ ] Implement `get_shapes(shape)`
 - [ ] Implement `get_series_group(series_id)`
@@ -108,7 +134,12 @@
 
 ## Phase 3: Large Data Handling Utilities
 
+**[See: ARCHITECTURE.md → Large Data Handling Strategy](ARCHITECTURE.md#large-data-handling-strategy)**
+
 ### Token Estimation (using tiktoken)
+
+**[See: ARCHITECTURE.md → Token Estimation](ARCHITECTURE.md#token-estimation)**
+**[See: API_MAPPING.md → Utility Components](API_MAPPING.md#utility-components)**
 - [ ] Create `src/mcp_fred/utils/token_estimator.py`
 - [ ] Install and integrate tiktoken library (~2.7 MB)
 - [ ] Implement token counting using tiktoken encodings
@@ -126,6 +157,9 @@
 - [ ] Write unit tests for token estimation with conservative limits
 
 ### JSON to CSV Conversion
+
+**[See: ARCHITECTURE.md → JSON to CSV Conversion](ARCHITECTURE.md#file-formats--json-to-csv-conversion)**
+**[See: API_MAPPING.md → Utility Components](API_MAPPING.md#utility-components)**
 - [ ] Create `src/mcp_fred/utils/json_to_csv.py`
 - [ ] Implement JSON to CSV converter for series observations
 - [ ] Handle nested JSON structures (flatten for CSV)
@@ -137,6 +171,9 @@
 - [ ] Write unit tests for JSON to CSV conversion
 
 ### File Writing Utilities
+
+**[See: ARCHITECTURE.md → Streaming to Files](ARCHITECTURE.md#streaming-to-files)**
+**[See: API_MAPPING.md → Utility Components](API_MAPPING.md#utility-components)**
 - [ ] Create `src/mcp_fred/utils/file_writer.py`
 - [ ] Implement CSV writer with streaming support
 - [ ] Implement JSON writer with streaming support
@@ -147,6 +184,9 @@
 - [ ] Write unit tests for file writers
 
 ### Path Resolution & Security
+
+**[See: ARCHITECTURE.md → Security & Validation](ARCHITECTURE.md#security--validation)**
+**[See: API_MAPPING.md → Utility Components](API_MAPPING.md#utility-components)**
 - [ ] Create `src/mcp_fred/utils/path_resolver.py`
 - [ ] Implement secure path resolution with `FRED_STORAGE_DIR`
 - [ ] Add validation to prevent directory traversal attacks
@@ -159,6 +199,9 @@
 - [ ] Write unit tests for path security
 
 ### Output Handler Integration
+
+**[See: ARCHITECTURE.md → Tool Parameter Design](ARCHITECTURE.md#tool-parameter-design)**
+**[See: API_MAPPING.md → Utility Components](API_MAPPING.md#utility-components)**
 - [ ] Create `src/mcp_fred/utils/output_handler.py`
 - [ ] Implement `ResultOutputHandler` class
 - [ ] Add filename pattern generation with variables
@@ -171,6 +214,8 @@
 - [ ] Write integration tests
 
 ### Configuration for Large Data
+
+**[See: ARCHITECTURE.md → Configuration Management](ARCHITECTURE.md#configuration-management)**
 - [ ] Add `OutputConfig` class to `config.py`
 - [ ] Add environment variable loading for output settings
 - [ ] Add `FRED_STORAGE_DIR` configuration and validation
@@ -182,6 +227,9 @@
 - [ ] Document all configuration options in config.py
 
 ### Async Job Management
+
+**[See: ARCHITECTURE.md → Async Job Architecture](ARCHITECTURE.md#async-job-architecture)**
+**[See: API_MAPPING.md → Utility Components](API_MAPPING.md#utility-components)**
 - [ ] Create `src/mcp_fred/utils/job_manager.py`
 - [ ] Implement `JobManager` class with in-memory job storage
 - [ ] Implement job ID generation (UUID-based)
@@ -214,7 +262,12 @@
 
 ## Phase 4: MCP Tool Layer Implementation
 
+**[See: ARCHITECTURE.md → MCP Tool Design](ARCHITECTURE.md#mcp-tool-design)**
+**[See: API_MAPPING.md](API_MAPPING.md) - Complete tool → endpoint → file mapping**
+
 ### Configuration Management
+
+**[See: ARCHITECTURE.md → Configuration Management](ARCHITECTURE.md#configuration-management)**
 - [ ] Create `src/mcp_fred/config.py`
 - [ ] Implement environment variable loading
 - [ ] Implement configuration validation
@@ -229,6 +282,8 @@
 ### Tool Implementations
 
 #### Category Tool
+
+**[See: API_MAPPING.md → Category Endpoints](API_MAPPING.md#category-endpoints)**
 - [ ] Create `src/mcp_fred/tools/category.py`
 - [ ] Implement `fred_category` tool
 - [ ] Add operation routing logic
@@ -239,6 +294,8 @@
 - [ ] Write tool documentation
 
 #### Release Tool
+
+**[See: API_MAPPING.md → Release Endpoints](API_MAPPING.md#release-endpoints)**
 - [ ] Create `src/mcp_fred/tools/release.py`
 - [ ] Implement `fred_release` tool
 - [ ] Add operation routing logic
@@ -249,6 +306,8 @@
 - [ ] Write tool documentation
 
 #### Series Tool
+
+**[See: API_MAPPING.md → Series Endpoints](API_MAPPING.md#series-endpoints)** ⚠️ CRITICAL: Large data
 - [ ] Create `src/mcp_fred/tools/series.py`
 - [ ] Implement `fred_series` tool (CRITICAL: handles large observation datasets)
 - [ ] Add operation routing logic
@@ -260,6 +319,8 @@
 - [ ] Write tool documentation
 
 #### Source Tool
+
+**[See: API_MAPPING.md → Source Endpoints](API_MAPPING.md#source-endpoints)**
 - [ ] Create `src/mcp_fred/tools/source.py`
 - [ ] Implement `fred_source` tool
 - [ ] Add operation routing logic
@@ -270,6 +331,8 @@
 - [ ] Write tool documentation
 
 #### Tag Tool
+
+**[See: API_MAPPING.md → Tag Endpoints](API_MAPPING.md#tag-endpoints)**
 - [ ] Create `src/mcp_fred/tools/tag.py`
 - [ ] Implement `fred_tag` tool
 - [ ] Add operation routing logic
@@ -280,6 +343,8 @@
 - [ ] Write tool documentation
 
 #### Maps Tool
+
+**[See: API_MAPPING.md → Maps Endpoints](API_MAPPING.md#maps-endpoints)** ⚠️ CRITICAL: Large data
 - [ ] Create `src/mcp_fred/tools/maps.py`
 - [ ] Implement `fred_maps` tool (CRITICAL: handles large geographical datasets)
 - [ ] Add operation routing logic
@@ -291,6 +356,9 @@
 - [ ] Write tool documentation
 
 #### Job Management Tools
+
+**[See: ARCHITECTURE.md → Async Job Management Tool](ARCHITECTURE.md#async-job-management-tool)**
+**[See: API_MAPPING.md → Job Management Tools](API_MAPPING.md#job-management-tools)**
 - [ ] Create `src/mcp_fred/tools/job_status.py`
 - [ ] Implement `fred_job_status` tool
 - [ ] Add job_id parameter validation
@@ -311,6 +379,9 @@
 - [ ] Write tool documentation
 
 #### Project Management Tools
+
+**[See: ARCHITECTURE.md → Project Management Tools](ARCHITECTURE.md#project-management-tools)**
+**[See: API_MAPPING.md → Project Management Tools](API_MAPPING.md#project-management-tools)**
 - [ ] Create `src/mcp_fred/tools/project_list.py`
 - [ ] Implement `fred_project_list` tool
 - [ ] Add directory scanning logic for FRED_STORAGE_DIR
@@ -339,7 +410,11 @@
 
 ## Phase 4: Transport Layer Implementation
 
+**[See: ARCHITECTURE.md → Transport Layer](ARCHITECTURE.md#transport-layer)**
+
 ### STDIO Transport
+
+**[See: ARCHITECTURE.md → STDIO Transport](ARCHITECTURE.md#stdio-transport)**
 - [ ] Create `src/mcp_fred/transports/stdio.py`
 - [ ] Implement STDIO transport handler
 - [ ] Add JSON-RPC message parsing
@@ -348,6 +423,8 @@
 - [ ] Test with MCP client (Claude Desktop)
 
 ### Streamable HTTP Transport
+
+**[See: ARCHITECTURE.md → Streamable HTTP Transport](ARCHITECTURE.md#streamable-http-transport)**
 - [ ] Create `src/mcp_fred/transports/http.py`
 - [ ] Implement FastAPI HTTP endpoint
 - [ ] Add POST request handler for messages
@@ -364,6 +441,9 @@
 ---
 
 ## Phase 5: Testing
+
+**[See: ARCHITECTURE.md → Testing Strategy](ARCHITECTURE.md#testing-strategy)**
+**[See: API_MAPPING.md → Implementation Checklist](API_MAPPING.md#implementation-checklist)**
 
 ### Unit Tests
 
