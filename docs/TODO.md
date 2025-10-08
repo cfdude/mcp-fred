@@ -14,6 +14,31 @@
 
 **[See: ARCHITECTURE.md → Project Structure](ARCHITECTURE.md#project-structure)**
 
+### 📋 Pre-Phase Documentation Review (REQUIRED BEFORE STARTING)
+
+**Before implementing any tasks in this phase:**
+- [ ] **Review Existing Documentation**: Read ARCHITECTURE.md sections relevant to this phase
+- [ ] **Identify Documentation Gaps**: Are there missing diagrams, examples, or clarifications needed?
+- [ ] **Analyze Documentation Needs**: Based on this phase's tasks, what new documentation would help?
+- [ ] **Recommend Updates**: Propose new documentation files or enhancements to existing docs
+- [ ] **Get User Approval**: Present recommendations and wait for user approval before proceeding
+- [ ] **Create/Update Documentation**: Implement approved documentation changes
+- [ ] **Verify Cross-References**: Ensure all TODO items link to relevant architecture sections
+
+**Questions to Answer:**
+1. Do we need a DEVELOPMENT_GUIDE.md with project setup walkthrough?
+2. Should we create Python package structure diagrams?
+3. Do we need a DEPENDENCIES.md explaining why each dependency is needed?
+4. Should we document common development environment issues and solutions?
+5. Any other documentation that would help with this phase or future phases?
+
+**Priority 2 Documentation (From Phase 0.4):**
+- DEVELOPMENT_GUIDE.md - Implementation roadmap
+- Enhanced ARCHITECTURE.md - More code examples
+- TESTING_STRATEGY.md - Testing philosophy and patterns
+
+---
+
 ### Project Initialization
 - [ ] Create project directory structure
 - [ ] Initialize Python package structure (`src/mcp_fred/`)
@@ -43,6 +68,29 @@
 **[See: ARCHITECTURE.md → API Client Architecture](ARCHITECTURE.md#api-client-architecture)**
 **[See: FRED_API_REFERENCE.md](FRED_API_REFERENCE.md) - Complete FRED API documentation**
 **[See: API_MAPPING.md](API_MAPPING.md) - All endpoint mappings**
+
+### 📋 Pre-Phase Documentation Review (REQUIRED BEFORE STARTING)
+
+**Before implementing any tasks in this phase:**
+- [ ] **Review Existing Documentation**: Read ARCHITECTURE.md → API Client Architecture
+- [ ] **Review API Documentation**: Study FRED_API_REFERENCE.md and API_MAPPING.md thoroughly
+- [ ] **Identify Documentation Gaps**: Are HTTP client patterns clearly documented?
+- [ ] **Analyze Documentation Needs**: What would help with API client implementation?
+- [ ] **Recommend Updates**: Propose new documentation or enhancements
+- [ ] **Get User Approval**: Present recommendations and wait for approval
+- [ ] **Create/Update Documentation**: Implement approved changes
+- [ ] **Verify Cross-References**: Ensure API_MAPPING.md accurately reflects all endpoints
+
+**Questions to Answer:**
+1. Do we need detailed code examples for each endpoint implementation?
+2. Should we create HTTP request/response examples for each FRED API operation?
+3. Do we need error handling patterns documented with code examples?
+4. Should we document retry logic and rate limiting strategies in detail?
+5. Do we need a separate API_CLIENT_GUIDE.md for implementation patterns?
+6. Should we add sequence diagrams showing API request flow?
+7. Any documentation about testing API client with mocked responses?
+
+---
 
 ### Base HTTP Client
 - [ ] Create `src/mcp_fred/api/client.py` - Base FRED API client
@@ -135,6 +183,30 @@
 ## Phase 3: Large Data Handling Utilities
 
 **[See: ARCHITECTURE.md → Large Data Handling Strategy](ARCHITECTURE.md#large-data-handling-strategy)**
+
+### 📋 Pre-Phase Documentation Review (REQUIRED BEFORE STARTING)
+
+**Before implementing any tasks in this phase:**
+- [ ] **Review Existing Documentation**: Read ARCHITECTURE.md → Large Data Handling Strategy (entire section)
+- [ ] **Review Conservative Token Limits**: Understand Phase 0.4 decisions about 25% context usage
+- [ ] **Identify Documentation Gaps**: Are utility patterns clearly documented?
+- [ ] **Analyze Documentation Needs**: What would help with utility implementation?
+- [ ] **Recommend Updates**: Propose new documentation or enhancements
+- [ ] **Get User Approval**: Present recommendations and wait for approval
+- [ ] **Create/Update Documentation**: Implement approved changes
+- [ ] **Verify Cross-References**: Ensure utility component documentation is complete
+
+**Questions to Answer:**
+1. Do we need UTILITY_PATTERNS.md with reusable code examples?
+2. Should we create detailed token estimation algorithm documentation?
+3. Do we need flow diagrams for async job lifecycle?
+4. Should we document JSON to CSV conversion edge cases with examples?
+5. Do we need SECURITY_GUIDE.md for path resolution and validation?
+6. Should we add performance benchmarks for large dataset handling?
+7. Any documentation about background worker architecture and concurrency?
+8. Should we create PROJECT_STORAGE.md explaining directory organization?
+
+---
 
 ### Token Estimation (using tiktoken)
 
@@ -264,6 +336,39 @@
 
 **[See: ARCHITECTURE.md → MCP Tool Design](ARCHITECTURE.md#mcp-tool-design)**
 **[See: API_MAPPING.md](API_MAPPING.md) - Complete tool → endpoint → file mapping**
+
+### 📋 Pre-Phase Documentation Review (REQUIRED BEFORE STARTING)
+
+**Before implementing any tasks in this phase:**
+- [ ] **Review Existing Documentation**: Read ARCHITECTURE.md → MCP Tool Design section
+- [ ] **Review API Mappings**: Study complete API_MAPPING.md for all 12 tools
+- [ ] **Review Tool Response Patterns**: Understand inline, file, and async job responses
+- [ ] **Identify Documentation Gaps**: Are all tool patterns clearly documented?
+- [ ] **Analyze Documentation Needs**: What would help with tool implementation?
+- [ ] **Recommend Updates**: Propose new documentation or enhancements
+- [ ] **Get User Approval**: Present recommendations and wait for approval
+- [ ] **Create/Update Documentation**: Implement approved changes
+- [ ] **Verify Cross-References**: Ensure all tools link to architecture and API mapping
+
+**Questions to Answer:**
+1. Do we need TOOL_IMPLEMENTATION_GUIDE.md with step-by-step examples?
+2. Should we create detailed operation routing pattern documentation?
+3. Do we need comprehensive Pydantic schema examples for each tool?
+4. Should we document the complete MCP protocol integration?
+5. Do we need MCP_PROTOCOL.md explaining JSON-RPC communication?
+6. Should we add tool testing examples with mock data?
+7. Do we need USER_GUIDE.md showing how to use each tool from AI perspective?
+8. Should we document tool discovery and registration process?
+9. Any documentation about tool parameter validation patterns?
+10. Should we create CONFIGURATION_GUIDE.md for all environment variables?
+
+**Critical for This Phase:**
+- Series tool handles 100K+ observations (async jobs required)
+- Maps tool handles large shape files (file output preferred)
+- Project management tools need directory scanning logic
+- Job management tools need status tracking integration
+
+---
 
 ### Configuration Management
 
@@ -412,6 +517,30 @@
 
 **[See: ARCHITECTURE.md → Transport Layer](ARCHITECTURE.md#transport-layer)**
 
+### 📋 Pre-Phase Documentation Review (REQUIRED BEFORE STARTING)
+
+**Before implementing any tasks in this phase:**
+- [ ] **Review Existing Documentation**: Read ARCHITECTURE.md → Transport Layer section
+- [ ] **Review MCP Protocol Specs**: Understand STDIO and Streamable HTTP protocols
+- [ ] **Identify Documentation Gaps**: Are transport patterns clearly documented?
+- [ ] **Analyze Documentation Needs**: What would help with transport implementation?
+- [ ] **Recommend Updates**: Propose new documentation or enhancements
+- [ ] **Get User Approval**: Present recommendations and wait for approval
+- [ ] **Create/Update Documentation**: Implement approved changes
+- [ ] **Verify Cross-References**: Ensure transport documentation is complete
+
+**Questions to Answer:**
+1. Do we need TRANSPORT_GUIDE.md explaining both protocols in detail?
+2. Should we create JSON-RPC message format examples?
+3. Do we need DEPLOYMENT.md for different deployment scenarios?
+4. Should we document how to test each transport protocol?
+5. Do we need Claude Desktop integration examples?
+6. Should we document HTTP transport authentication patterns?
+7. Any documentation about transport error handling and recovery?
+8. Should we create TROUBLESHOOTING.md for common transport issues?
+
+---
+
 ### STDIO Transport
 
 **[See: ARCHITECTURE.md → STDIO Transport](ARCHITECTURE.md#stdio-transport)**
@@ -444,6 +573,40 @@
 
 **[See: ARCHITECTURE.md → Testing Strategy](ARCHITECTURE.md#testing-strategy)**
 **[See: API_MAPPING.md → Implementation Checklist](API_MAPPING.md#implementation-checklist)**
+
+### 📋 Pre-Phase Documentation Review (REQUIRED BEFORE STARTING)
+
+**Before implementing any tasks in this phase:**
+- [ ] **Review Existing Documentation**: Read ARCHITECTURE.md → Testing Strategy section
+- [ ] **Review Implementation Checklist**: Study API_MAPPING.md implementation requirements
+- [ ] **Identify Documentation Gaps**: Are testing patterns and strategies clearly documented?
+- [ ] **Analyze Documentation Needs**: What would help with comprehensive testing?
+- [ ] **Recommend Updates**: Propose new documentation or enhancements
+- [ ] **Get User Approval**: Present recommendations and wait for approval
+- [ ] **Create/Update Documentation**: Implement approved changes
+- [ ] **Verify Cross-References**: Ensure testing documentation covers all components
+
+**Questions to Answer:**
+1. Do we need TESTING_STRATEGY.md (Priority 2 doc) with detailed patterns?
+2. Should we create TESTING_GUIDE.md with step-by-step testing procedures?
+3. Do we need mock data examples for each FRED API endpoint?
+4. Should we document test fixture organization and reuse?
+5. Do we need COVERAGE_REQUIREMENTS.md by component type?
+6. Should we create INTEGRATION_TESTING.md for end-to-end scenarios?
+7. Any documentation about testing async job processing?
+8. Should we document how to test with real FRED API (API key required)?
+9. Do we need CI/CD pipeline documentation for automated testing?
+10. Should we create TEST_DATA.md explaining mock data generation?
+
+**Critical Testing Areas:**
+- Token estimation accuracy (conservative limits)
+- Async job lifecycle (accepted → processing → completed/failed)
+- Large dataset handling (100K+ observations)
+- File output and path security
+- Project management directory operations
+- Rate limit handling and retry logic
+
+---
 
 ### Unit Tests
 
@@ -529,6 +692,44 @@
 
 ## Phase 6: Documentation & Polish
 
+### 📋 Pre-Phase Documentation Review (REQUIRED BEFORE STARTING)
+
+**Before implementing any tasks in this phase:**
+- [ ] **Review ALL Existing Documentation**: Complete audit of all docs created so far
+- [ ] **Review User Perspective**: What does end user need to know?
+- [ ] **Identify Documentation Gaps**: What's missing for user-facing documentation?
+- [ ] **Analyze Documentation Needs**: What polishing and enhancement is needed?
+- [ ] **Recommend Updates**: Propose comprehensive documentation improvements
+- [ ] **Get User Approval**: Present recommendations and wait for approval
+- [ ] **Create/Update Documentation**: Implement approved changes
+- [ ] **Verify Documentation Quality**: Ensure all docs are clear, accurate, complete
+
+**Questions to Answer:**
+1. Is README.md comprehensive enough for new users?
+2. Do we need QUICK_START.md for getting started in 5 minutes?
+3. Should we create EXAMPLES.md with real-world use cases?
+4. Do we need TROUBLESHOOTING.md for common issues?
+5. Should we document all error codes and messages?
+6. Do we need API_REFERENCE.md for all 12 tools?
+7. Should we create CONFIGURATION_REFERENCE.md for all env vars?
+8. Do we need CONTRIBUTING.md for open source contributions?
+9. Should we add diagrams and visualizations to documentation?
+10. Do we need VIDEO_TUTORIALS.md links or creation plan?
+11. Should we create FAQ.md addressing common questions?
+12. Do we need PERFORMANCE.md documenting benchmarks?
+
+**Documentation Audit Checklist:**
+- [ ] All code has comprehensive docstrings
+- [ ] All functions have type hints
+- [ ] All tools documented with examples
+- [ ] All configuration options documented
+- [ ] All error messages documented
+- [ ] Architecture diagrams current and accurate
+- [ ] Cross-references all working correctly
+- [ ] No broken links in documentation
+
+---
+
 ### User Documentation
 - [ ] Create comprehensive README.md
 - [ ] Write installation instructions
@@ -554,6 +755,42 @@
 
 ## Phase 7: Deployment & Release
 
+### 📋 Pre-Phase Documentation Review (REQUIRED BEFORE STARTING)
+
+**Before implementing any tasks in this phase:**
+- [ ] **Review Existing Documentation**: Ensure all user-facing docs are complete
+- [ ] **Review Release Requirements**: Understand packaging and distribution needs
+- [ ] **Identify Documentation Gaps**: What's needed for deployment and distribution?
+- [ ] **Analyze Documentation Needs**: What would help with packaging and release?
+- [ ] **Recommend Updates**: Propose new documentation or enhancements
+- [ ] **Get User Approval**: Present recommendations and wait for approval
+- [ ] **Create/Update Documentation**: Implement approved changes
+- [ ] **Verify Release Readiness**: Ensure all documentation is release-ready
+
+**Questions to Answer:**
+1. Do we need PACKAGING_GUIDE.md for creating distributions?
+2. Should we create RELEASE_PROCESS.md documenting release workflow?
+3. Do we need PYPI_PUBLISHING.md for PyPI publication?
+4. Should we document Docker deployment?
+5. Do we need INSTALLATION_VERIFICATION.md for testing installs?
+6. Should we create UPGRADE_GUIDE.md for version migrations?
+7. Do we need VERSIONING_POLICY.md explaining semantic versioning?
+8. Should we document release checklist and verification steps?
+9. Do we need SECURITY_DISCLOSURE.md for security issues?
+10. Should we create SUPPORT.md explaining support channels?
+
+**Release Documentation Checklist:**
+- [ ] CHANGELOG.md complete with all changes
+- [ ] README.md ready for PyPI display
+- [ ] LICENSE file present and correct
+- [ ] All version numbers consistent
+- [ ] Installation instructions verified
+- [ ] Configuration examples tested
+- [ ] All links in documentation working
+- [ ] Release notes drafted
+
+---
+
 ### Package Preparation
 - [ ] Create setup.py or use pyproject.toml for packaging
 - [ ] Add __version__ to package
@@ -574,6 +811,40 @@
 ---
 
 ## Phase 8: Future Enhancements (Post v1.0)
+
+### 📋 Pre-Phase Documentation Review (REQUIRED BEFORE STARTING)
+
+**Before implementing any tasks in this phase:**
+- [ ] **Review User Feedback**: Analyze actual usage patterns and feature requests
+- [ ] **Review Performance Metrics**: Understand bottlenecks and optimization opportunities
+- [ ] **Identify Documentation Gaps**: What new features need documentation?
+- [ ] **Analyze Documentation Needs**: How to document enhancements and new features?
+- [ ] **Recommend Updates**: Propose documentation for future features
+- [ ] **Get User Approval**: Present recommendations and wait for approval
+- [ ] **Create/Update Documentation**: Implement approved changes
+- [ ] **Plan Documentation Strategy**: Ensure enhancement docs integrate with existing docs
+
+**Questions to Answer:**
+1. Do we need ROADMAP.md for future features and timeline?
+2. Should we create ENHANCEMENT_PROPOSALS.md for tracking ideas?
+3. Do we need PERFORMANCE_OPTIMIZATION.md documenting tuning?
+4. Should we document caching strategies and implementation?
+5. Do we need MONITORING_GUIDE.md for observability?
+6. Should we create ANALYTICS.md for usage tracking?
+7. Do we need FEEDBACK_PROCESS.md for collecting user input?
+8. Should we document experimental features separately?
+9. Do we need DEPRECATION_POLICY.md for removing features?
+10. Should we create COMMUNITY.md for user community building?
+
+**Enhancement Documentation Strategy:**
+- Document experimental features clearly
+- Mark deprecated features with timeline
+- Provide migration guides for breaking changes
+- Document performance improvements with benchmarks
+- Create upgrade guides for each enhancement
+- Maintain backward compatibility documentation
+
+---
 
 ### Performance Optimization
 - [ ] Implement response caching
@@ -597,8 +868,45 @@
 
 ## Notes
 
-- All tasks should be completed in order by phase
-- Each completed task should be moved to PROGRESS.md
-- Update CHANGELOG.md after completing each phase
-- Run tests before marking a phase as complete
-- Use conventional commits for all git commits
+### Development Workflow
+
+- **Documentation First**: Complete "Pre-Phase Documentation Review" section before any implementation
+- **User Approval Required**: Get user approval for documentation recommendations before proceeding
+- **Implementation Order**: Complete tasks in order by phase
+- **Progress Tracking**: Move completed tasks to PROGRESS.md
+- **Changelog Updates**: Update CHANGELOG.md after completing each phase
+- **Testing Required**: Run tests before marking a phase as complete
+- **Commit Conventions**: Use conventional commits for all git commits
+
+### Documentation Review Process
+
+Each phase includes a **📋 Pre-Phase Documentation Review** section that MUST be completed before implementation:
+
+1. **Review**: Read all relevant existing documentation
+2. **Analyze**: Identify gaps, needed updates, and new documentation
+3. **Recommend**: Present specific documentation proposals to user
+4. **Approve**: Wait for user approval of recommendations
+5. **Create**: Implement approved documentation changes
+6. **Verify**: Ensure all cross-references and links work correctly
+7. **Proceed**: Only then begin phase implementation
+
+### Why Documentation Reviews Matter
+
+- **Context Continuity**: Ensures new AI contexts have complete information
+- **Architecture Clarity**: Keeps design decisions documented as project evolves
+- **User Experience**: Provides comprehensive guides for end users
+- **Team Collaboration**: Enables future contributors to understand the project
+- **Quality Assurance**: Documents patterns, standards, and best practices
+- **Problem Prevention**: Identifies potential issues before implementation
+
+### Documentation Quality Standards
+
+All documentation should be:
+- **Accurate**: Reflects actual implementation and decisions
+- **Complete**: Covers all necessary information
+- **Clear**: Easy to understand for target audience
+- **Consistent**: Uses same terminology and format throughout
+- **Current**: Updated with each change
+- **Cross-Referenced**: Properly linked to related documentation
+- **Navigable**: Easy to find information quickly
+- **Self-Contained**: No dependency on external tools (Jira, Confluence, etc.)
