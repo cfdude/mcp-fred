@@ -215,6 +215,69 @@ This file tracks all completed development tasks for the MCP-FRED project. Tasks
 
 ---
 
+## Phase 0.4: Conservative Token Limits + Project Management (2025-10-08)
+
+### User Feedback Integration
+- ✅ User pointed out token estimation may be too aggressive
+- ✅ Context window already partially consumed by:
+  - Chat history with user
+  - Multiple MCP server responses
+  - System prompts and tool definitions
+- ✅ User requested project management helper functions
+- ✅ Need tools to scan FRED_STORAGE_DIR and list existing projects
+
+### Conservative Token Limits
+- ✅ **Changed safe thresholds from 70% to 25% of total context**
+- ✅ **Claude Sonnet**: 50K safe limit (was 140K)
+- ✅ **GPT-4**: 25K safe limit (was 70K)
+- ✅ **Gemini Pro**: 250K safe limit (was 700K)
+- ✅ Added `FRED_SAFE_TOKEN_LIMIT` configuration option
+- ✅ Added `FRED_ASSUME_CONTEXT_USED` configuration (default: 0.75)
+- ✅ Philosophy: "Err on the side of saving to file more often"
+
+### Project Management Tools Designed
+- ✅ **fred_project_list** - List all projects in storage directory
+  - Scans FRED_STORAGE_DIR for existing projects
+  - Returns metadata: file count, size, dates
+  - Helps users discover existing projects
+- ✅ **fred_project_create** - Create new project directory
+  - Validates project name (alphanumeric, hyphens, underscores)
+  - Creates subdirectories: series, maps, releases, categories, sources, tags
+  - Creates .project.json metadata file
+- ✅ **fred_project_files** - List files in a project
+  - Filter by subdirectory (series, maps, etc.)
+  - Sort by name, size, modified date
+  - Shows file metadata: size, rows, format, dates
+
+### Project Directory Structure
+- ✅ Automatic subdirectory creation on project creation
+- ✅ Metadata tracking via .project.json
+- ✅ Organization: `{FRED_STORAGE_DIR}/{project-name}/{type}/`
+
+### Documentation Updates
+- ✅ Updated `ARCHITECTURE.md`:
+  - Added conservative token limits section with rationale
+  - Added project management tools section
+  - Added project workflow examples
+  - Updated tool tables to include 3 new tools
+  - Updated project structure with new tool files
+- ✅ Updated `TODO.md`:
+  - Added 7 token estimation tasks (conservative limits)
+  - Added 18 project management tasks (implementation + testing)
+  - Total new tasks: 25
+
+### Key Decisions
+1. **Token Limits**: Assume 75% of context already used (was 30%)
+2. **Safe Thresholds**: 25% of total capacity (was 70%)
+3. **Project Tools**: All 3 marked as required (not optional)
+4. **User Experience**: AI proactively asks about project selection
+5. **Simplicity**: No server-side analysis, just data retrieval
+
+### User Quote
+> "I think that should probably come from Fred-Data.functions, so that we can scan that directory, know what projects exist, and then allow the user to determine if they want to use an existing project or create a new one."
+
+---
+
 ## Next Steps
 
 See `TODO.md` for upcoming development tasks. The next phase is:

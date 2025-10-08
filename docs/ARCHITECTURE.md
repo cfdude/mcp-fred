@@ -67,7 +67,13 @@ mcp-fred/
 │   │       ├── series.py        # MCP tool: fred_series
 │   │       ├── source.py        # MCP tool: fred_source
 │   │       ├── tag.py           # MCP tool: fred_tag
-│   │       └── maps.py          # MCP tool: fred_maps
+│   │       ├── maps.py          # MCP tool: fred_maps
+│   │       ├── job_status.py    # MCP tool: fred_job_status
+│   │       ├── job_list.py      # MCP tool: fred_job_list (optional)
+│   │       ├── job_cancel.py    # MCP tool: fred_job_cancel (optional)
+│   │       ├── project_list.py  # MCP tool: fred_project_list
+│   │       ├── project_create.py # MCP tool: fred_project_create
+│   │       └── project_files.py # MCP tool: fred_project_files
 ├── tests/
 │   ├── __init__.py
 │   ├── test_tools/
@@ -179,10 +185,31 @@ class TokenEstimator:
 - Supports multiple model encodings
 - Widely used and well-maintained
 
-**Model Token Limits:**
-- Claude Sonnet: ~200K tokens (safe threshold: 140K)
-- GPT-4: ~100K tokens (safe threshold: 70K)
-- Gemini Pro: ~1M tokens (safe threshold: 700K)
+**Model Token Limits (Conservative Approach):**
+
+The token limits assume that the AI agent's context window is already partially consumed by:
+- Chat history with the user
+- Other MCP server responses
+- System prompts and tool definitions
+- Ongoing conversation context
+
+**Conservative Safe Thresholds (25% of total capacity):**
+- Claude Sonnet: ~200K total context (safe threshold: **50K**)
+- GPT-4: ~100K total context (safe threshold: **25K**)
+- Gemini Pro: ~1M total context (safe threshold: **250K**)
+
+**Rationale:**
+We err on the side of saving to file more often to:
+1. Prevent context overflow from competing MCP servers
+2. Account for existing chat history
+3. Leave room for agent reasoning and response generation
+4. Provide stable, predictable behavior
+
+**Configuration:**
+```bash
+FRED_SAFE_TOKEN_LIMIT=50000          # Override safe threshold for auto mode
+FRED_ASSUME_CONTEXT_USED=0.75        # Assume 75% of context already used
+```
 
 #### 4. **Streaming to Files**
 
@@ -619,6 +646,179 @@ async def fred_job_cancel(
 
 ---
 
+## Project Management Tools
+
+To help users organize their FRED data storage, the server provides project management helper tools:
+
+### fred_project_list Tool
+
+List all existing projects in the FRED storage directory:
+
+```python
+@mcp.tool()
+async def fred_project_list() -> dict:
+    """
+    List all FRED data projects in the storage directory
+
+    Scans FRED_STORAGE_DIR to discover existing project directories
+
+    Returns:
+        {
+            "status": "success",
+            "storage_dir": "/Users/username/Documents/fred-data",
+            "projects": [
+                {
+                    "name": "economic-analysis",
+                    "path": "/Users/username/Documents/fred-data/economic-analysis",
+                    "file_count": 45,
+                    "total_size_mb": 23.4,
+                    "created_date": "2025-10-01",
+                    "last_modified": "2025-10-08"
+                },
+                {
+                    "name": "gdp-research",
+                    "path": "/Users/username/Documents/fred-data/gdp-research",
+                    "file_count": 12,
+                    "total_size_mb": 5.2,
+                    "created_date": "2025-09-15",
+                    "last_modified": "2025-09-20"
+                }
+            ],
+            "total_projects": 2,
+            "total_storage_mb": 28.6
+        }
+    """
+    pass
+```
+
+### fred_project_create Tool
+
+Create a new project directory:
+
+```python
+@mcp.tool()
+async def fred_project_create(
+    project_name: str,
+    description: Optional[str] = None
+) -> dict:
+    """
+    Create a new FRED data project directory
+
+    Args:
+        project_name: Name for the new project (alphanumeric, hyphens, underscores)
+        description: Optional description of the project
+
+    Returns:
+        {
+            "status": "success",
+            "project_name": "inflation-study",
+            "project_path": "/Users/username/Documents/fred-data/inflation-study",
+            "subdirectories_created": ["series", "maps", "releases"],
+            "message": "Project 'inflation-study' created successfully"
+        }
+    """
+    pass
+```
+
+**Project Directory Structure:**
+
+When a new project is created, it automatically includes:
+
+```
+{FRED_STORAGE_DIR}/{project-name}/
+├── series/       # Series observations and metadata
+├── maps/         # GeoFRED data and shape files
+├── releases/     # Release data
+├── categories/   # Category data
+├── sources/      # Source data
+├── tags/         # Tag data
+└── .project.json # Project metadata (description, created date, etc.)
+```
+
+### fred_project_files Tool
+
+List all files in a specific project:
+
+```python
+@mcp.tool()
+async def fred_project_files(
+    project_name: str,
+    subdirectory: Optional[str] = None,  # Filter by: series, maps, releases, etc.
+    sort_by: str = "modified",            # Sort by: name, size, modified
+    limit: int = 100
+) -> dict:
+    """
+    List files in a FRED data project
+
+    Args:
+        project_name: Name of the project
+        subdirectory: Optional filter (series, maps, releases, categories, sources, tags)
+        sort_by: Sort order (name, size, modified, created)
+        limit: Maximum files to return
+
+    Returns:
+        {
+            "status": "success",
+            "project_name": "economic-analysis",
+            "project_path": "/Users/username/Documents/fred-data/economic-analysis",
+            "files": [
+                {
+                    "name": "GNPCA_observations_20251008_143022.csv",
+                    "path": "series/GNPCA_observations_20251008_143022.csv",
+                    "full_path": "/Users/username/.../economic-analysis/series/GNPCA_observations_20251008_143022.csv",
+                    "size_mb": 3.2,
+                    "rows": 75234,
+                    "created": "2025-10-08T14:30:22",
+                    "modified": "2025-10-08T14:30:45",
+                    "format": "csv"
+                },
+                {
+                    "name": "inflation_search_20251007_091500.json",
+                    "path": "series/inflation_search_20251007_091500.json",
+                    "full_path": "/Users/username/.../economic-analysis/series/inflation_search_20251007_091500.json",
+                    "size_mb": 0.8,
+                    "created": "2025-10-07T09:15:00",
+                    "modified": "2025-10-07T09:15:03",
+                    "format": "json"
+                }
+            ],
+            "total_files": 45,
+            "total_size_mb": 23.4
+        }
+    """
+    pass
+```
+
+### Project Management Workflow
+
+**Typical User Experience:**
+
+1. **User starts new analysis:**
+   - AI: "Would you like to use an existing project or create a new one?"
+   - AI calls `fred_project_list` to show available projects
+
+2. **User chooses to create new project:**
+   - User: "Create a new project called 'inflation-study'"
+   - AI calls `fred_project_create` with name="inflation-study"
+
+3. **User requests FRED data:**
+   - User: "Get GDP data for the last 10 years"
+   - AI calls `fred_series` with project="inflation-study"
+   - Data automatically saved to `/fred-data/inflation-study/series/`
+
+4. **User wants to review collected data:**
+   - User: "What data have I collected for this project?"
+   - AI calls `fred_project_files` with project_name="inflation-study"
+   - Shows list of all files with metadata
+
+**Benefits:**
+- Organization: Data grouped by analysis project
+- Discovery: Easy to find existing projects and data
+- Reusability: Projects can be resumed across sessions
+- Cleanup: Easy to identify and remove old projects
+
+---
+
 ## MCP Tool Design
 
 ### Tool Structure
@@ -646,6 +846,8 @@ async def fred_category(
 
 ### Implemented Tools
 
+#### Core FRED Data Tools
+
 | Tool Name | Operations | Endpoints Covered |
 |-----------|-----------|-------------------|
 | `fred_category` | `get`, `list_children`, `get_related`, `get_series`, `get_tags`, `get_related_tags` | `/category/*` |
@@ -654,6 +856,22 @@ async def fred_category(
 | `fred_source` | `list`, `get`, `get_releases` | `/sources/*`, `/source/*` |
 | `fred_tag` | `list`, `get_related_tags`, `get_series` | `/tags/*`, `/related_tags` |
 | `fred_maps` | `get_shapes`, `get_series_group`, `get_regional_data`, `get_series_data` | `/geofred/*` |
+
+#### Job Management Tools
+
+| Tool Name | Purpose | Required |
+|-----------|---------|----------|
+| `fred_job_status` | Check status of async background jobs | **Yes** |
+| `fred_job_list` | List recent jobs with filtering | Optional |
+| `fred_job_cancel` | Cancel running background jobs | Optional |
+
+#### Project Management Tools
+
+| Tool Name | Purpose | Required |
+|-----------|---------|----------|
+| `fred_project_list` | List all projects in storage directory | **Yes** |
+| `fred_project_create` | Create new project directory structure | **Yes** |
+| `fred_project_files` | List files within a specific project | **Yes** |
 
 ### Tool Response Format
 

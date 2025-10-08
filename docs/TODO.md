@@ -114,10 +114,16 @@
 - [ ] Implement token counting using tiktoken encodings
 - [ ] Implement sampling strategy for large datasets
 - [ ] Add model-specific token limit configuration
+- [ ] **Implement conservative token limits (25% of context capacity)**
+- [ ] **Add Claude Sonnet safe limit: 50K tokens (was 140K)**
+- [ ] **Add GPT-4 safe limit: 25K tokens (was 70K)**
+- [ ] **Add Gemini Pro safe limit: 250K tokens (was 700K)**
+- [ ] **Add `FRED_SAFE_TOKEN_LIMIT` configuration option**
+- [ ] **Add `FRED_ASSUME_CONTEXT_USED` configuration (default: 0.75)**
 - [ ] Add encoding support for Claude (cl100k_base approximation)
 - [ ] Add encoding support for GPT-4 (cl100k_base)
-- [ ] Implement `should_use_file()` decision logic
-- [ ] Write unit tests for token estimation
+- [ ] Implement `should_use_file()` decision logic with conservative thresholds
+- [ ] Write unit tests for token estimation with conservative limits
 
 ### JSON to CSV Conversion
 - [ ] Create `src/mcp_fred/utils/json_to_csv.py`
@@ -304,6 +310,31 @@
 - [ ] Clean up resources for cancelled jobs
 - [ ] Write tool documentation
 
+#### Project Management Tools
+- [ ] Create `src/mcp_fred/tools/project_list.py`
+- [ ] Implement `fred_project_list` tool
+- [ ] Add directory scanning logic for FRED_STORAGE_DIR
+- [ ] Calculate project metadata (file count, size, dates)
+- [ ] Add error handling for missing storage directory
+- [ ] Write tool documentation
+
+- [ ] Create `src/mcp_fred/tools/project_create.py`
+- [ ] Implement `fred_project_create` tool
+- [ ] Add project name validation (alphanumeric, hyphens, underscores)
+- [ ] Create subdirectories (series, maps, releases, categories, sources, tags)
+- [ ] Create .project.json metadata file
+- [ ] Add error handling for existing projects
+- [ ] Write tool documentation
+
+- [ ] Create `src/mcp_fred/tools/project_files.py`
+- [ ] Implement `fred_project_files` tool
+- [ ] Add file listing with metadata (size, rows, dates, format)
+- [ ] Add subdirectory filtering (series, maps, releases, etc.)
+- [ ] Add sorting options (name, size, modified, created)
+- [ ] Add pagination/limit support
+- [ ] Add error handling for missing projects
+- [ ] Write tool documentation
+
 ---
 
 ## Phase 4: Transport Layer Implementation
@@ -376,6 +407,9 @@
 - [ ] Test `fred_job_status` tool
 - [ ] Test `fred_job_list` tool (optional)
 - [ ] Test `fred_job_cancel` tool (optional)
+- [ ] Test `fred_project_list` tool
+- [ ] Test `fred_project_create` tool
+- [ ] Test `fred_project_files` tool
 
 #### Async Job Tests
 - [ ] Test job creation and ID generation
@@ -387,6 +421,17 @@
 - [ ] Test concurrent job processing
 - [ ] Test rate limit handling with backoff
 - [ ] Mock large FRED API responses for testing
+
+#### Project Management Tests
+- [ ] Test project listing with metadata calculation
+- [ ] Test project creation with directory structure
+- [ ] Test project creation validation (name, duplicates)
+- [ ] Test project files listing with filtering
+- [ ] Test project files sorting (name, size, modified)
+- [ ] Test .project.json metadata creation and reading
+- [ ] Test handling of missing FRED_STORAGE_DIR
+- [ ] Test handling of non-existent projects
+- [ ] Mock file system operations for testing
 
 ### Integration Tests
 - [ ] Test end-to-end STDIO transport
