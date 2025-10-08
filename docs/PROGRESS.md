@@ -96,6 +96,61 @@ This file tracks all completed development tasks for the MCP-FRED project. Tasks
 
 ---
 
+## Phase 0.2: Architecture Refinements (2025-10-08)
+
+### User Feedback Integration
+- ✅ Changed from `MCP_CLIENT_ROOT` to **`FRED_STORAGE_DIR`** for clarity
+- ✅ Made storage directory **user-configurable** (not MCP server root)
+- ✅ Added Claude Desktop configuration with two key fields:
+  - `FRED_API_KEY` (required)
+  - `FRED_STORAGE_DIR` (optional, defaults to `./fred-data`)
+- ✅ Researched tiktoken library (lightweight: ~2.7 MB installed)
+- ✅ Decided to **include tiktoken** for accurate token counting
+
+### JSON to CSV Conversion Strategy
+- ✅ **Problem identified**: FRED API returns JSON/XML, not CSV
+- ✅ **Solution**: Implement JSON to CSV converter as convenience layer
+- ✅ **Rationale**: Standardize output format across MCP servers
+  - Snowflake MCP returns CSV
+  - FRED MCP should also return CSV (via conversion)
+  - Common format for data analysis workflows
+- ✅ Designed `JSONToCSVConverter` utility
+- ✅ Added conversion tasks to Phase 3 in TODO.md
+
+### Configuration Improvements
+- ✅ Updated all documentation to use `FRED_STORAGE_DIR`
+- ✅ Added minimal, standard, and advanced Claude Desktop config examples
+- ✅ Documented default behavior: `./fred-data` if not specified
+- ✅ Updated `.env` file examples
+
+### Token Estimation with tiktoken
+- ✅ Confirmed tiktoken is lightweight enough to include
+- ✅ Updated architecture to use tiktoken for all token counting
+- ✅ Added encoding support for Claude (cl100k_base approximation)
+- ✅ Added encoding support for GPT-4 (cl100k_base)
+- ✅ Updated dependencies list
+
+### Documentation Updates
+- ✅ Updated `ARCHITECTURE.md`:
+  - Replaced `MCP_CLIENT_ROOT` with `FRED_STORAGE_DIR`
+  - Added JSON to CSV conversion section
+  - Added tiktoken integration details
+  - Updated all configuration examples
+- ✅ Updated `TODO.md`:
+  - Added JSON to CSV conversion tasks (9 new tasks)
+  - Updated token estimation tasks for tiktoken
+  - Updated path resolution for configurable directory
+  - Added testing tasks for JSON to CSV
+- ✅ Updated project structure to include `json_to_csv.py`
+
+### Key Decisions
+1. **Storage Directory**: User-configurable, any local filesystem path
+2. **tiktoken**: Include for accurate token counting (~2.7 MB acceptable)
+3. **JSON to CSV**: Provide convenience conversion for standardized output
+4. **Default Format**: CSV (converted from JSON) for compatibility
+
+---
+
 ## Next Steps
 
 See `TODO.md` for upcoming development tasks. The next phase is:

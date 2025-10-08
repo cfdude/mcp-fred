@@ -22,13 +22,11 @@
 - [ ] httpx (async HTTP client)
 - [ ] pydantic (data validation)
 - [ ] python-dotenv (environment variables)
-- [ ] tiktoken (token counting for OpenAI models)
-- [ ] anthropic (for Claude token counting - optional)
+- [ ] **tiktoken** (token counting - lightweight ~2.7 MB installed)
 - [ ] ruff (linting/formatting)
 - [ ] pytest (testing)
 - [ ] pytest-asyncio (async testing)
 - [ ] pytest-cov (test coverage)
-- [ ] pandas (optional: for CSV operations)
 
 ---
 
@@ -110,14 +108,27 @@
 
 ## Phase 3: Large Data Handling Utilities
 
-### Token Estimation
+### Token Estimation (using tiktoken)
 - [ ] Create `src/mcp_fred/utils/token_estimator.py`
-- [ ] Implement token counting for text data
+- [ ] Install and integrate tiktoken library (~2.7 MB)
+- [ ] Implement token counting using tiktoken encodings
 - [ ] Implement sampling strategy for large datasets
 - [ ] Add model-specific token limit configuration
+- [ ] Add encoding support for Claude (cl100k_base approximation)
+- [ ] Add encoding support for GPT-4 (cl100k_base)
 - [ ] Implement `should_use_file()` decision logic
-- [ ] Add support for multiple AI models (Claude, GPT-4, Gemini)
 - [ ] Write unit tests for token estimation
+
+### JSON to CSV Conversion
+- [ ] Create `src/mcp_fred/utils/json_to_csv.py`
+- [ ] Implement JSON to CSV converter for series observations
+- [ ] Handle nested JSON structures (flatten for CSV)
+- [ ] Implement converter for category data
+- [ ] Implement converter for release data
+- [ ] Implement converter for maps/GeoFRED data
+- [ ] Add proper CSV headers based on JSON structure
+- [ ] Handle edge cases (null values, nested arrays, special characters)
+- [ ] Write unit tests for JSON to CSV conversion
 
 ### File Writing Utilities
 - [ ] Create `src/mcp_fred/utils/file_writer.py`
@@ -131,9 +142,11 @@
 
 ### Path Resolution & Security
 - [ ] Create `src/mcp_fred/utils/path_resolver.py`
-- [ ] Implement secure path resolution with `MCP_CLIENT_ROOT`
+- [ ] Implement secure path resolution with `FRED_STORAGE_DIR`
 - [ ] Add validation to prevent directory traversal attacks
 - [ ] Add check to prevent writing to MCP server directory
+- [ ] Support user-configurable storage directory (any local path)
+- [ ] Create project subdirectories automatically
 - [ ] Implement filename sanitization
 - [ ] Add reserved name checking (Windows compatibility)
 - [ ] Implement write permission validation
@@ -145,7 +158,8 @@
 - [ ] Add filename pattern generation with variables
 - [ ] Implement auto vs manual mode decision logic
 - [ ] Add project-based directory organization
-- [ ] Integrate token estimator for auto mode
+- [ ] Integrate token estimator for auto mode (tiktoken)
+- [ ] Integrate JSON to CSV converter for CSV output
 - [ ] Integrate file writers for file output
 - [ ] Add validation for output parameters
 - [ ] Write integration tests
@@ -153,10 +167,12 @@
 ### Configuration for Large Data
 - [ ] Add `OutputConfig` class to `config.py`
 - [ ] Add environment variable loading for output settings
-- [ ] Add `MCP_CLIENT_ROOT` validation
+- [ ] Add `FRED_STORAGE_DIR` configuration and validation
+- [ ] Support user-configurable storage directory path
+- [ ] Add default value: `./fred-data` if not specified
 - [ ] Add default values for all output parameters
 - [ ] Add Pydantic validation for output config
-- [ ] Document all configuration options
+- [ ] Document all configuration options in config.py
 
 ---
 
@@ -271,10 +287,14 @@
 ### Unit Tests
 
 #### Output Handling Tests
-- [ ] Test token estimation accuracy
+- [ ] Test token estimation accuracy with tiktoken
 - [ ] Test file vs screen decision logic
 - [ ] Test path resolution and security
+- [ ] Test FRED_STORAGE_DIR configuration
+- [ ] Test user-configurable storage directory paths
 - [ ] Test filename generation and sanitization
+- [ ] Test JSON to CSV conversion for series data
+- [ ] Test JSON to CSV conversion for nested structures
 - [ ] Test CSV writer with various data types
 - [ ] Test JSON writer with various data types
 - [ ] Test chunked writing for large datasets

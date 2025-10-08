@@ -54,8 +54,9 @@ mcp-fred/
 │   │   ├── utils/
 │   │   │   ├── __init__.py
 │   │   │   ├── output_handler.py    # Smart output handling (file vs screen)
-│   │   │   ├── token_estimator.py   # Token counting and estimation
+│   │   │   ├── token_estimator.py   # Token counting with tiktoken
 │   │   │   ├── file_writer.py       # CSV/JSON streaming to files
+│   │   │   ├── json_to_csv.py       # JSON to CSV converter
 │   │   │   └── path_resolver.py     # Secure path resolution and validation
 │   │   └── tools/
 │   │       ├── __init__.py
@@ -112,36 +113,55 @@ Inspired by Snowflake MCP server's approach, we implement intelligent data stora
 
 #### 2. **Project-Based Storage**
 
-Data is organized by project:
+Data is organized by project in a user-configurable directory:
 ```
-{MCP_CLIENT_ROOT}/
-└── fred-data/
-    └── {project-name}/
-        ├── series/
-        │   ├── GNPCA_observations_20251008_143022.csv
-        │   └── GNPCA_observations_20251008_143022.json
-        ├── maps/
-        │   ├── regional_data_20251008_150030.csv
-        │   └── shapes_california_20251008_150045.json
-        └── releases/
-            └── release_53_series_20251008_151500.csv
+{FRED_STORAGE_DIR}/
+└── {project-name}/
+    ├── series/
+    │   ├── GNPCA_observations_20251008_143022.csv
+    │   └── GNPCA_observations_20251008_143022.json
+    ├── maps/
+    │   ├── regional_data_20251008_150030.csv
+    │   └── shapes_california_20251008_150045.json
+    └── releases/
+        └── release_53_series_20251008_151500.csv
 ```
 
 **Key Environment Variables:**
-- `MCP_CLIENT_ROOT`: Client project root directory (prevents pollution of MCP server directory)
-- `FRED_DATA_DIR`: Base directory for FRED data (default: `fred-data`)
-- `FRED_PROJECT_NAME`: Current project name (default: `default`)
+- `FRED_STORAGE_DIR`: **User-configurable root directory** for all FRED data storage
+  - Required for file output operations
+  - Can be any directory on user's local filesystem
+  - Example: `/Users/username/Documents/fred-data` or `C:\Users\username\fred-data`
+  - **Default**: `./fred-data` (relative to current working directory)
+- `FRED_PROJECT_NAME`: Current project name for organizing data (default: `default`)
+
+**Security Notes:**
+- Storage directory is completely user-controlled
+- No writes to MCP server installation directory
+- Path validation prevents directory traversal
+- Write permissions validated before operations
 
 #### 3. **Token Estimation**
 
-Before returning large results, estimate token usage:
+Using **tiktoken** library for accurate token counting:
 
 ```python
+import tiktoken
+
 class TokenEstimator:
-    def estimate_tokens(self, data: List[Dict], model: str) -> int:
-        """Estimate token count for data"""
+    def __init__(self):
+        # tiktoken is lightweight (~2.7 MB installed)
+        # Supports multiple model encodings
+        self.encodings = {
+            'claude': tiktoken.get_encoding('cl100k_base'),  # Claude approximation
+            'gpt-4': tiktoken.get_encoding('cl100k_base'),
+            'gpt-3.5': tiktoken.get_encoding('cl100k_base'),
+        }
+
+    def estimate_tokens(self, data: List[Dict], model: str = 'gpt-4') -> int:
+        """Estimate token count using tiktoken"""
         # Sample first N rows
-        # Calculate average tokens per row
+        # Use tiktoken to count tokens accurately
         # Extrapolate for full dataset
         pass
 
@@ -150,6 +170,12 @@ class TokenEstimator:
         safety_margin = 0.7  # 70% of limit
         return estimated_tokens > (model_limit * safety_margin)
 ```
+
+**Why tiktoken?**
+- Accurate token counting (OpenAI's official library)
+- Lightweight: ~2.7 MB installed size
+- Supports multiple model encodings
+- Widely used and well-maintained
 
 **Model Token Limits:**
 - Claude Sonnet: ~200K tokens (safe threshold: 140K)
@@ -199,12 +225,66 @@ For large requests, return immediate acknowledgment:
 
 Then process in background and update when complete.
 
-#### 6. **File Formats**
+#### 6. **File Formats & JSON to CSV Conversion**
 
-Support multiple output formats:
+**FRED API Response Formats:**
+- FRED API returns: **JSON** or **XML**
+- MCP Server default: **JSON** (XML only if explicitly requested)
+
+**MCP Server Output Formats:**
 - **CSV**: Human-readable, Excel-compatible, good for time series
 - **JSON**: Structured data, programmatic access, preserves data types
 - **Parquet** (future): Columnar format for analytics
+
+**JSON to CSV Conversion Strategy:**
+
+Since FRED API doesn't natively return CSV, we provide a convenience conversion:
+
+```python
+class JSONToCSVConverter:
+    def convert(self, json_data: dict, format_type: str = 'csv') -> Union[str, dict]:
+        """
+        Convert FRED JSON response to CSV format
+
+        Handles:
+        - Series observations (time series data)
+        - Multiple data structures (observations, categories, releases)
+        - Nested JSON structures flattened to CSV rows
+        """
+        if format_type == 'csv':
+            # Extract observations/data array from JSON
+            # Flatten nested structures
+            # Convert to CSV with proper headers
+            return csv_string
+        else:
+            # Return original JSON
+            return json_data
+```
+
+**Why JSON to CSV Conversion?**
+- Standardized output across different MCP servers (Snowflake returns CSV, we should too)
+- Common format for data analysis workflows
+- Excel compatibility for business users
+- No need for AI agents to handle format conversions
+
+**Conversion Examples:**
+
+Series observations JSON:
+```json
+{
+  "observations": [
+    {"date": "2023-01-01", "value": "25683.8"},
+    {"date": "2023-02-01", "value": "25820.4"}
+  ]
+}
+```
+
+Converts to CSV:
+```csv
+date,value
+2023-01-01,25683.8
+2023-02-01,25820.4
+```
 
 #### 7. **Filename Generation**
 
@@ -296,11 +376,10 @@ MCP_HTTP_HOST=0.0.0.0                   # Optional: HTTP server host
 MCP_HTTP_PORT=8000                       # Optional: HTTP server port
 
 # Large Data Handling Configuration
-MCP_CLIENT_ROOT=/path/to/project        # Required for file output: Client project root
-FRED_DATA_DIR=fred-data                 # Optional: Base directory for FRED data
+FRED_STORAGE_DIR=/path/to/fred-data    # User-configurable storage directory (default: ./fred-data)
 FRED_PROJECT_NAME=default               # Optional: Project name for organization
 FRED_OUTPUT_MODE=auto                   # Optional: auto, screen, or file
-FRED_OUTPUT_FORMAT=csv                  # Optional: csv or json
+FRED_OUTPUT_FORMAT=csv                  # Optional: csv or json (CSV via JSON conversion)
 FRED_FILENAME_PATTERN={series_id}_{operation}_{date}_{time}  # Optional
 
 # Token Management (for auto mode)
@@ -318,6 +397,24 @@ FRED_SCREEN_ROW_THRESHOLD=1000          # Optional: Max rows for screen output
 
 ### Example MCP Client Configuration (STDIO)
 
+**Claude Desktop Configuration:**
+
+```json
+{
+  "mcpServers": {
+    "fred": {
+      "command": "python",
+      "args": ["-m", "mcp_fred"],
+      "env": {
+        "FRED_API_KEY": "your_api_key_here",
+        "FRED_STORAGE_DIR": "/Users/username/Documents/fred-data"
+      }
+    }
+  }
+}
+```
+
+**Minimal Configuration (uses defaults):**
 ```json
 {
   "mcpServers": {
@@ -331,11 +428,39 @@ FRED_SCREEN_ROW_THRESHOLD=1000          # Optional: Max rows for screen output
   }
 }
 ```
+*Note: Without `FRED_STORAGE_DIR`, defaults to `./fred-data` in current working directory*
+
+**Advanced Configuration:**
+```json
+{
+  "mcpServers": {
+    "fred": {
+      "command": "python",
+      "args": ["-m", "mcp_fred"],
+      "env": {
+        "FRED_API_KEY": "your_api_key_here",
+        "FRED_STORAGE_DIR": "/Users/username/Documents/fred-data",
+        "FRED_PROJECT_NAME": "economic-analysis",
+        "FRED_OUTPUT_MODE": "auto",
+        "FRED_OUTPUT_FORMAT": "csv"
+      }
+    }
+  }
+}
+```
 
 ### Example .env File (Local Server)
 
 ```bash
+# Required
 FRED_API_KEY=your_api_key_here
+
+# Storage Configuration
+FRED_STORAGE_DIR=/Users/username/Documents/fred-data
+FRED_PROJECT_NAME=my-project
+FRED_OUTPUT_FORMAT=csv
+
+# MCP Transport
 MCP_TRANSPORT=http
 MCP_HTTP_HOST=127.0.0.1
 MCP_HTTP_PORT=8000
