@@ -461,6 +461,61 @@ This file tracks all completed development tasks for the MCP-FRED project. Tasks
 
 ---
 
+---
+
+## Phase 2: Documentation Review (2025-10-08)
+
+### Documentation Analysis
+- ✅ Reviewed ARCHITECTURE.md API Client Architecture section
+- ✅ Reviewed FRED_API_REFERENCE.md (278 lines, all 50+ endpoints)
+- ✅ Reviewed API_MAPPING.md (complete endpoint mappings)
+- ✅ Identified documentation gaps for Phase 2 implementation
+- ✅ Presented recommendations to user
+
+### User Feedback on Recommendations
+- ✅ **Rate Limiting & Retry Logic**: Approved concise additions to ARCHITECTURE.md
+- ✅ **Testing Patterns**: Approved high-level guidelines, no code scaffolding
+- ❌ **Detailed code examples**: Rejected (too much maintenance, let AI figure it out)
+- ❌ **HTTP request/response examples**: Rejected (FRED docs cover this)
+- ❌ **Separate API_CLIENT_GUIDE.md**: Rejected (creates fragmentation)
+- ❌ **Sequence diagrams**: Rejected (not needed)
+
+### Documentation Created/Enhanced
+- ✅ **ARCHITECTURE.md additions** (~40 lines)
+  - Rate Limiting & Retry Logic section
+  - FRED API limits: 120 req/min, HTTP 429 responses
+  - Exponential backoff formula: `base_delay * (2 ^ attempt)` with ±25% jitter
+  - Max retries: 3 for 429, 2 for 5xx
+  - Retry conditions: 429 and 5xx retry, 4xx no retry
+  - Circuit breaker pattern: 5 failures threshold, 60s cooldown
+  - Configuration options and testing requirements
+- ✅ **DEVELOPMENT_GUIDE.md additions** (~30 lines)
+  - Testing Patterns section
+  - Mocking guidelines using respx for httpx
+  - What to test: API client, error handling, retry logic, circuit breaker
+  - Testing style: descriptive names, parametrize, one assertion per test
+  - Quality standards: tests before merge, 80% coverage, no flaky tests
+- ✅ **Added respx dependency** (12th dependency)
+  - requirements.txt: respx>=0.20.0
+  - pyproject.toml: dev dependencies
+  - DEPENDENCIES.md: Full rationale document
+  - Size analysis updated: ~61 MB total dev size
+
+### Key Decisions
+1. **Documentation Philosophy**: State expectations, not scaffolding; AI figures out implementation
+2. **Concise Additions**: ~70 lines total (down from original 250-line proposal)
+3. **Principle-Based**: Focus on "what to test" not "how to test it"
+4. **Digestible Files**: Keep documentation context-window friendly
+5. **respx for Mocking**: Official httpx mocking library, async support
+
+### Statistics
+- **Lines Added**: 103 lines across 5 files
+- **New Dependency**: respx (httpx mocking for tests)
+- **Total Dependencies**: 12 (7 core + 5 dev)
+- **Commit**: `docs(phase2): add rate limiting, retry logic, and testing patterns`
+
+---
+
 ## Next Steps
 
 See `TODO.md` for upcoming development tasks. The next phase is:

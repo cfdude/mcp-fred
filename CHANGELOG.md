@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Phase 2 Documentation - 2025-10-08)
+- **Rate Limiting & Retry Logic section in ARCHITECTURE.md**
+  - FRED API limits: 120 req/min, HTTP 429 response handling
+  - Exponential backoff formula with jitter (±25% variance)
+  - Max retries: 3 for 429 rate limits, 2 for 5xx server errors
+  - Retry conditions: 429 and 5xx retry with backoff, 4xx fail immediately
+  - Circuit breaker pattern: 5 failures threshold, 60s cooldown, state transitions
+  - Configuration options and testing requirements
+- **Testing Patterns section in DEVELOPMENT_GUIDE.md**
+  - Mocking guidelines using respx for httpx requests
+  - What to test: API client, error handling, retry logic, circuit breaker, rate limiting
+  - Testing style: descriptive names, parametrize, one assertion per test
+  - Quality standards: tests before merge, 80% coverage, no flaky tests
+- **respx dependency** (12th dependency, 5th dev dependency)
+  - requirements.txt: respx>=0.20.0 for httpx mocking
+  - pyproject.toml: Added to dev dependencies
+  - DEPENDENCIES.md: Full rationale with alternatives considered
+  - Size analysis updated: ~61 MB total dev size (was ~60 MB)
+
+### Changed (Phase 2 Documentation - 2025-10-08)
+- **Total Dependencies**: Increased from 10 to 12 (7 core + 5 dev)
+- **Documentation Philosophy**: Established principle-based approach (state expectations, not scaffolding)
+
+### Decided (Phase 2 Documentation - 2025-10-08)
+- **Concise Documentation**: ~70 lines added (down from 250-line proposal)
+- **No Code Scaffolding**: Let AI figure out implementation from principles
+- **respx for Mocking**: Official httpx mocking library with async support
+- **Reject Code Examples**: Too much maintenance, AI can implement from guidelines
+
 ### Added (Phase 1 Implementation - 2025-10-08)
 - **Project Directory Structure**
   - `src/mcp_fred/` package with subdirectories: api, tools, utils, transports
