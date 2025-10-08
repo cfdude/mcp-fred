@@ -50,6 +50,10 @@ pytest-asyncio>=0.21.0
 # Used for: Coverage reporting (HTML, terminal), enforcing 80% minimum
 pytest-cov>=4.0.0
 
+# respx - Mock httpx requests for testing
+# Used for: Mocking FRED API responses in tests, testing retry/error handling
+respx>=0.20.0
+
 # ===========================
 # Optional Dependencies
 # ===========================

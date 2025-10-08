@@ -911,6 +911,45 @@ class FREDClient:
             return response.json()
 ```
 
+### Rate Limiting & Retry Logic
+
+**FRED API Limits:**
+- 120 requests per minute
+- Exceeding limit returns HTTP 429 (Too Many Requests)
+
+**Retry Strategy:**
+- **Exponential Backoff:** Wait time = `base_delay * (2 ^ attempt)` with jitter
+- **Max Retries:** 3 attempts for rate limits (429), 2 for server errors (500+)
+- **Retry Conditions:**
+  - 429 (Rate Limit): Always retry with backoff
+  - 500, 502, 503, 504 (Server Errors): Retry with backoff
+  - 401, 400, 404 (Client Errors): No retry, fail immediately
+- **Jitter:** Add random variance (±25%) to prevent thundering herd
+
+**Circuit Breaker Pattern:**
+- Track consecutive failures per endpoint
+- Open circuit after 5 consecutive failures (stop making requests)
+- Half-open after cooldown period (60 seconds)
+- Close circuit on successful request
+
+**Implementation Expectations:**
+- Use decorators or middleware for retry logic
+- Track rate limit windows (60-second sliding window)
+- Log retry attempts with backoff times
+- Expose metrics: retry count, circuit breaker state, rate limit hits
+
+**Configuration:**
+- `FRED_RATE_LIMIT_PER_MINUTE` (default: 120)
+- `FRED_RATE_LIMIT_RETRY_DELAY` (default: 60 seconds)
+- `FRED_MAX_RETRIES` (default: 3 for 429, 2 for 5xx)
+- `FRED_CIRCUIT_BREAKER_THRESHOLD` (default: 5 failures)
+
+**Testing Requirements:**
+- Verify exponential backoff calculation
+- Test circuit breaker state transitions
+- Mock 429 responses and verify retry behavior
+- Test that 401/400/404 don't trigger retries
+
 ---
 
 ## Transport Layer

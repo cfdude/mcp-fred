@@ -247,6 +247,35 @@ pytest -s
 
 **See testing sections in [TODO.md](TODO.md) → Phase 5 for detailed testing tasks.**
 
+#### Testing Patterns
+
+**Mocking FRED API Responses:**
+- Use `respx` library for mocking httpx requests
+- Create fixtures in `tests/fixtures/` for reusable API response data
+- Mock at the HTTP layer, not the FRED client layer (test the full client stack)
+
+**What to Test:**
+- **API Client**: All endpoint methods return correct Pydantic models
+- **Error Handling**: 401 (invalid key), 429 (rate limit), 500 (server error), 404 (not found)
+- **Retry Logic**: Exponential backoff calculation, max retries respected, no retry on 4xx
+- **Circuit Breaker**: State transitions (closed → open → half-open → closed)
+- **Rate Limiting**: Request throttling within 120 req/min window
+- **Token Estimation**: Accurate token counts for various response sizes
+- **File Handling**: Path security validation, file writes, CSV/JSON conversion
+- **Async Jobs**: Job lifecycle (accepted → processing → completed/failed)
+
+**Testing Style:**
+- Test behavior and contracts, not implementation details
+- Use descriptive test names: `test_rate_limit_triggers_429_retry_with_backoff`
+- One assertion per test when possible (easier to debug failures)
+- Parametrize tests for multiple inputs: `@pytest.mark.parametrize("status_code", [500, 502, 503])`
+
+**Quality Standards:**
+- All new code must have tests before merge
+- Tests must pass before commit
+- Coverage must not decrease below 80%
+- No flaky tests (tests that randomly fail)
+
 ---
 
 ## Git Workflow

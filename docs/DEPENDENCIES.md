@@ -12,7 +12,7 @@ This document explains the rationale behind each dependency in the MCP-FRED proj
 - Architecture decisions and tradeoffs
 - Contribution guidelines
 
-**Total Dependencies:** 10 (7 core + 3 development)
+**Total Dependencies:** 12 (7 core + 5 development)
 
 ---
 
@@ -301,6 +301,33 @@ Conservative token estimation (Phase 0.4 decision):
 
 ---
 
+### 12. respx
+
+**Version Required:** >= 0.20.0
+
+**Purpose:** Mock httpx requests for testing
+
+**Why respx?**
+- **httpx-specific**: Designed specifically for mocking httpx (our HTTP client)
+- **Async support**: Full asyncio support for async client testing
+- **Pattern matching**: Flexible request matching (URL, headers, body)
+- **Simple API**: Clean, intuitive mocking syntax
+- **Well-maintained**: Active development, good documentation
+
+**Alternatives Considered:**
+- httpx built-in mocking: Limited, respx more feature-rich
+- responses library: Only works with requests, not httpx
+- Manual mocking: More boilerplate, harder to maintain
+
+**Used For:**
+- Mocking FRED API responses in tests
+- Testing retry logic (429 rate limits, 5xx errors)
+- Testing error handling (401, 404, etc.)
+- Testing circuit breaker state transitions
+- Verifying request parameters sent to FRED API
+
+---
+
 ## Dependency Management Strategy
 
 ### Version Pinning
@@ -392,9 +419,10 @@ pipdeptree
 | pytest | ~5 MB | Dev only, testing |
 | pytest-asyncio | <1 MB | Dev only, async tests |
 | pytest-cov | ~2 MB | Dev only, coverage |
+| respx | ~1 MB | Dev only, httpx mocking |
 
 **Total Production Size:** ~35 MB (very reasonable)
-**Total Dev Size:** ~60 MB (acceptable)
+**Total Dev Size:** ~61 MB (acceptable)
 
 ---
 
