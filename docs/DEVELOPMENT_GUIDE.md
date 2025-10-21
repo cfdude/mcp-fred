@@ -11,6 +11,7 @@
 - [API_MAPPING.md](API_MAPPING.md) - FRED API to tool mapping
 - [TODO.md](TODO.md) - Development tasks
 - [DEPENDENCIES.md](DEPENDENCIES.md) - Why each dependency was chosen
+- [TESTING_STRATEGY.md](TESTING_STRATEGY.md) - Test taxonomy and coverage workflow
 
 ---
 
@@ -148,23 +149,43 @@ mcp-fred/
 
 ### Running the Development Server
 
-**STDIO Mode (Local - for Claude Desktop):**
+**STDIO Mode (Local - for Claude Desktop or `mcp-cli`):**
 
 ```bash
-# Run server via Python module
-python -m mcp_fred
+# Export credentials once per shell session
+export FRED_API_KEY="sk-your-key"
+export FRED_STORAGE_DIR="$(pwd)/fred-data"
 
-# Server will communicate via stdin/stdout
-# Used by MCP clients like Claude Desktop
+# Run server via Python module (stdout/stdin JSON-RPC)
+python -m mcp_fred
 ```
 
-**HTTP Mode (Remote):**
+- Works out of the box with Claude Desktop configuration snippets in the README.
+- Test interactively via [`mcp-cli`](https://github.com/modelcontextprotocol/cli):
+
+  ```bash
+  mcp-cli call fred_category --operation get --category_id 125 --output screen
+  mcp-cli call fred_series --operation get_observations --series_id GDP --limit 5 --output screen
+  ```
+
+**HTTP Mode (Remote or container deployment):**
 
 ```bash
-# Run server with HTTP transport
 python -m mcp_fred --transport http --host 0.0.0.0 --port 8000
+```
 
-# Access at http://localhost:8000/mcp
+- Requests hit `http://<host>:<port>/mcp`. Example cURL probe:
+
+  ```bash
+  curl -X POST http://localhost:8000/mcp        -H 'Content-Type: application/json'        -d '{"jsonrpc":"2.0","id":"ping","method":"health.check"}'
+  ```
+- Forward environment variables (`FRED_API_KEY`, optional `FRED_STORAGE_DIR`) or
+  mount a `.env` file when running inside Docker.
+
+Run transport smoke tests after modifying server wiring:
+
+```bash
+python3 -m pytest tests/test_transports/
 ```
 
 ### Code Quality Tools
@@ -686,3 +707,17 @@ We're following an 8-phase development plan. See [TODO.md](TODO.md) for complete
 
 **Last Updated:** 2025-10-08
 **Document Version:** 1.0
+
+## Working with Job & Project Tools
+
+### Project Utilities
+- `fred_project_list` summarises storage usage for each project under `FRED_STORAGE_DIR` (count, total size, latest modified).
+- `fred_project_create` scaffolds the canonical subdirectories (`series`, `maps`, etc.) and writes a `.project.json` metadata file.
+- `fred_project_files` supports filtering by subdirectory, sorting (`name`, `size`, `modified`), and pagination via `limit` / `offset`.
+
+### Job Utilities
+- `fred_job_status` exposes progress, result, and error details for a single job—ideal after large dataset exports.
+- `fred_job_list` returns recent jobs sorted by `updated_at` with optional status filtering (`accepted`, `processing`, `completed`, `failed`, `cancelled`).
+- `fred_job_cancel` marks a job as `cancelled` (with an optional `reason`) so background workers report the termination cleanly.
+
+> Tip: Combine project tools with job tools to inspect generated files immediately after long-running exports complete.

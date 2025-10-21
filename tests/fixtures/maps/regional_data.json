@@ -1,0 +1,24 @@
+{
+  "regional_data": [
+    {
+      "series_id": "LAUST040000000000003",
+      "region": "04000",
+      "value": 4.2,
+      "metadata": {
+        "observation_date": "2024-01-01",
+        "units": "Percent",
+        "seasonal_adjustment": "Not Seasonally Adjusted"
+      }
+    },
+    {
+      "series_id": "LAUST060000000000003",
+      "region": "06000",
+      "value": 3.8,
+      "metadata": {
+        "observation_date": "2024-01-01",
+        "units": "Percent",
+        "seasonal_adjustment": "Not Seasonally Adjusted"
+      }
+    }
+  ]
+}

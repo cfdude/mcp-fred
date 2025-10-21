@@ -90,24 +90,61 @@
 6. Should we add sequence diagrams showing API request flow?
 7. Any documentation about testing API client with mocked responses?
 
+### Sprint 1 Backlog (In Progress)
+- **Story 1 – Core FRED HTTP client foundation (Owner: AI/Rob pairing)**
+  - Acceptance: `api/client.py` issues authenticated requests, centralises retry/backoff with logging, and exposes configurable timeout/rate-limit settings.
+- **Story 2 – Shared response schemas for categories/releases (Owner: AI)**
+  - Acceptance: Pydantic models cover shared metadata blocks and validate sample payloads for categories and releases.
+- **Story 3 – Category endpoint module (Owner: AI)**
+  - Acceptance: `api/endpoints/category.py` implements all `/fred/category/*` calls using shared client + schemas and passes unit mocks.
+- **Story 4 – Release endpoint module (Owner: AI)**
+  - Acceptance: `api/endpoints/release.py` covers `/fred/releases*` and `/fred/release/*`, reusing schemas and returning validated data.
+- **Story 5 – Source/Tag schema extensions (Owner: AI)**
+  - Acceptance: Additional Pydantic models support source/tag payloads and integrate with shared metadata structures.
+- **Story 6 – Source & Tag endpoint modules (Owner: AI)**
+  - Acceptance: `api/endpoints/source.py` and `api/endpoints/tag.py` deliver respective endpoints with passing mocked tests.
+
+### Sprint 1 Backlog (Completed)
+- **Story 1 – Core FRED HTTP client foundation (Owner: AI/Rob pairing)** ✅
+- **Story 2 – Shared response schemas for categories/releases (Owner: AI)** ✅
+- **Story 3 – Category endpoint module (Owner: AI)** ✅
+- **Story 4 – Release endpoint module (Owner: AI)** ✅
+- **Story 5 – Source/Tag schema extensions (Owner: AI)** ✅
+- **Story 6 – Source & Tag endpoint modules (Owner: AI)** ✅
+
+### Sprint 2 Backlog (Completed)
+- **Story 7 – Configuration & server bootstrap (Owner: AI/Rob pairing)** ✅
+  - Implemented `config.py` and `server.py` to expose a shared `FREDClient` plus endpoint facades.
+- **Story 8 – fred_category tool implementation (Owner: AI)** ✅
+  - `tools/category.py` now routes operations through `CategoryAPI` with screen-only output and validation.
+- **Story 9 – fred_release tool implementation (Owner: AI)** ✅
+  - Added multi-operation support in `tools/release.py` including related tags and tables.
+- **Story 10 – fred_source & fred_tag tools (Owner: AI)** ✅
+  - Delivered source/tag tools mirroring API mapping and shared helper usage.
+- **Story 11 – API client & endpoint unit tests (Owner: AI)** ✅
+  - Introduced respx-backed tests covering success, 4xx/5xx errors, and retry paths.
+- **Story 12 – Tool layer tests + coverage gating (Owner: AI)** ✅
+  - Added tool-level tests for routing/error branches and restored ≥80% coverage.
+
 ---
 
 ### Base HTTP Client
-- [ ] Create `src/mcp_fred/api/client.py` - Base FRED API client
-- [ ] Implement authentication with API key
-- [ ] Implement error handling and HTTP status code handling
-- [ ] Add request/response logging
-- [ ] Implement rate limiting (if needed)
-- [ ] Add retry logic with exponential backoff
+- [x] Create `src/mcp_fred/api/client.py` - Base FRED API client
+- [x] Implement authentication with API key
+- [x] Implement error handling and HTTP status code handling
+- [x] Add request/response logging
+- [x] Implement rate limiting (if needed)
+- [x] Add retry logic with exponential backoff
+- [ ] Calibrate rate-limit and backoff parameters using real-world FRED usage metrics (post-deployment validation)
 
 ### API Response Models
-- [ ] Create `src/mcp_fred/api/models/responses.py`
-- [ ] Define Pydantic models for category responses
-- [ ] Define Pydantic models for release responses
-- [ ] Define Pydantic models for series responses
-- [ ] Define Pydantic models for source responses
-- [ ] Define Pydantic models for tag responses
-- [ ] Define Pydantic models for maps responses
+- [x] Create `src/mcp_fred/api/models/responses.py`
+- [x] Define Pydantic models for category responses
+- [x] Define Pydantic models for release responses
+- [x] Define Pydantic models for series responses
+- [x] Define Pydantic models for source responses
+- [x] Define Pydantic models for tag responses
+- [x] Define Pydantic models for maps responses
 
 ### Endpoint Implementations
 
@@ -116,67 +153,67 @@
 #### Category Endpoints
 
 **[See: API_MAPPING.md → Category Endpoints](API_MAPPING.md#category-endpoints)**
-- [ ] Create `src/mcp_fred/api/endpoints/category.py`
-- [ ] Implement `get_category(category_id)`
-- [ ] Implement `get_category_children(category_id)`
-- [ ] Implement `get_category_related(category_id)`
-- [ ] Implement `get_category_series(category_id)`
-- [ ] Implement `get_category_tags(category_id)`
-- [ ] Implement `get_category_related_tags(category_id)`
+- [x] Create `src/mcp_fred/api/endpoints/category.py`
+- [x] Implement `get_category(category_id)`
+- [x] Implement `get_category_children(category_id)`
+- [x] Implement `get_category_related(category_id)`
+- [x] Implement `get_category_series(category_id)`
+- [x] Implement `get_category_tags(category_id)`
+- [x] Implement `get_category_related_tags(category_id)`
 
 #### Release Endpoints
 
 **[See: API_MAPPING.md → Release Endpoints](API_MAPPING.md#release-endpoints)**
-- [ ] Create `src/mcp_fred/api/endpoints/release.py`
-- [ ] Implement `get_releases()` (plural)
-- [ ] Implement `get_releases_dates()`
-- [ ] Implement `get_release(release_id)` (singular)
-- [ ] Implement `get_release_dates(release_id)`
-- [ ] Implement `get_release_series(release_id)`
-- [ ] Implement `get_release_sources(release_id)`
-- [ ] Implement `get_release_tags(release_id)`
-- [ ] Implement `get_release_related_tags(release_id)`
-- [ ] Implement `get_release_tables(release_id)`
+- [x] Create `src/mcp_fred/api/endpoints/release.py`
+- [x] Implement `get_releases()` (plural)
+- [x] Implement `get_releases_dates()`
+- [x] Implement `get_release(release_id)` (singular)
+- [x] Implement `get_release_dates(release_id)`
+- [x] Implement `get_release_series(release_id)`
+- [x] Implement `get_release_sources(release_id)`
+- [x] Implement `get_release_tags(release_id)`
+- [x] Implement `get_release_related_tags(release_id)`
+- [x] Implement `get_release_tables(release_id)`
 
 #### Series Endpoints
 
 **[See: API_MAPPING.md → Series Endpoints](API_MAPPING.md#series-endpoints)** ⚠️ CRITICAL: Large data handling
-- [ ] Create `src/mcp_fred/api/endpoints/series.py`
-- [ ] Implement `get_series(series_id)`
-- [ ] Implement `search_series(search_text)`
-- [ ] Implement `get_series_categories(series_id)`
-- [ ] Implement `get_series_observations(series_id)`
-- [ ] Implement `get_series_release(series_id)`
-- [ ] Implement `get_series_tags(series_id)`
-- [ ] Implement `search_series_tags(series_search_text)`
-- [ ] Implement `search_series_related_tags(series_search_text)`
-- [ ] Implement `get_series_updates()`
-- [ ] Implement `get_series_vintage_dates(series_id)`
+- [x] Create `src/mcp_fred/api/endpoints/series.py`
+- [x] Implement `get_series(series_id)`
+- [x] Implement `search_series(search_text)`
+- [x] Implement `get_series_categories(series_id)`
+- [x] Implement `get_series_observations(series_id)`
+- [x] Implement `get_series_release(series_id)`
+- [x] Implement `get_series_tags(series_id)`
+- [x] Implement `search_series_tags(series_search_text)`
+- [x] Implement `search_series_related_tags(series_search_text)`
+- [x] Implement `get_series_updates()`
+- [x] Implement `get_series_vintage_dates(series_id)`
 
 #### Source Endpoints
 
 **[See: API_MAPPING.md → Source Endpoints](API_MAPPING.md#source-endpoints)**
-- [ ] Create `src/mcp_fred/api/endpoints/source.py`
-- [ ] Implement `get_sources()` (plural)
-- [ ] Implement `get_source(source_id)` (singular)
-- [ ] Implement `get_source_releases(source_id)`
+- [x] Create `src/mcp_fred/api/endpoints/source.py`
+- [x] Implement `get_sources()` (plural)
+- [x] Implement `get_source(source_id)` (singular)
+- [x] Implement `get_source_releases(source_id)`
 
 #### Tag Endpoints
 
 **[See: API_MAPPING.md → Tag Endpoints](API_MAPPING.md#tag-endpoints)**
-- [ ] Create `src/mcp_fred/api/endpoints/tag.py`
-- [ ] Implement `get_tags()`
-- [ ] Implement `get_tags_series(tag_names)`
-- [ ] Implement `get_related_tags(tag_names)`
+- [x] Create `src/mcp_fred/api/endpoints/tag.py`
+- [x] Implement `get_tags()`
+- [x] Implement `get_tags_series(tag_names)`
+- [x] Implement `get_related_tags(tag_names)`
 
 #### Maps Endpoints
 
 **[See: API_MAPPING.md → Maps Endpoints](API_MAPPING.md#maps-endpoints)** ⚠️ CRITICAL: Large data handling
-- [ ] Create `src/mcp_fred/api/endpoints/maps.py`
-- [ ] Implement `get_shapes(shape)`
-- [ ] Implement `get_series_group(series_id)`
-- [ ] Implement `get_regional_data()`
-- [ ] Implement `get_series_data(series_id)`
+- [x] Create `src/mcp_fred/api/endpoints/maps.py`
+- [x] Implement `get_shapes(shape)`
+- [x] Implement `get_series_group(series_id)`
+- [x] Implement `get_regional_data()`
+- [x] Implement `get_series_data(series_id)`
 
 ---
 
@@ -212,115 +249,115 @@
 
 **[See: ARCHITECTURE.md → Token Estimation](ARCHITECTURE.md#token-estimation)**
 **[See: API_MAPPING.md → Utility Components](API_MAPPING.md#utility-components)**
-- [ ] Create `src/mcp_fred/utils/token_estimator.py`
-- [ ] Install and integrate tiktoken library (~2.7 MB)
-- [ ] Implement token counting using tiktoken encodings
-- [ ] Implement sampling strategy for large datasets
-- [ ] Add model-specific token limit configuration
-- [ ] **Implement conservative token limits (25% of context capacity)**
-- [ ] **Add Claude Sonnet safe limit: 50K tokens (was 140K)**
-- [ ] **Add GPT-4 safe limit: 25K tokens (was 70K)**
-- [ ] **Add Gemini Pro safe limit: 250K tokens (was 700K)**
-- [ ] **Add `FRED_SAFE_TOKEN_LIMIT` configuration option**
-- [ ] **Add `FRED_ASSUME_CONTEXT_USED` configuration (default: 0.75)**
-- [ ] Add encoding support for Claude (cl100k_base approximation)
-- [ ] Add encoding support for GPT-4 (cl100k_base)
-- [ ] Implement `should_use_file()` decision logic with conservative thresholds
-- [ ] Write unit tests for token estimation with conservative limits
+- [x] Create `src/mcp_fred/utils/token_estimator.py`
+- [x] Install and integrate tiktoken library (~2.7 MB)
+- [x] Implement token counting using tiktoken encodings
+- [x] Implement sampling strategy for large datasets
+- [x] Add model-specific token limit configuration
+- [x] **Implement conservative token limits (25% of context capacity)**
+- [x] **Add Claude Sonnet safe limit: 50K tokens (was 140K)**
+- [x] **Add GPT-4 safe limit: 25K tokens (was 70K)**
+- [x] **Add Gemini Pro safe limit: 250K tokens (was 700K)**
+- [x] **Add `FRED_SAFE_TOKEN_LIMIT` configuration option**
+- [x] **Add `FRED_ASSUME_CONTEXT_USED` configuration (default: 0.75)**
+- [x] Add encoding support for Claude (cl100k_base approximation)
+- [x] Add encoding support for GPT-4 (cl100k_base)
+- [x] Implement `should_use_file()` decision logic with conservative thresholds
+- [x] Write unit tests for token estimation with conservative limits
 
 ### JSON to CSV Conversion
 
 **[See: ARCHITECTURE.md → JSON to CSV Conversion](ARCHITECTURE.md#file-formats--json-to-csv-conversion)**
 **[See: API_MAPPING.md → Utility Components](API_MAPPING.md#utility-components)**
-- [ ] Create `src/mcp_fred/utils/json_to_csv.py`
-- [ ] Implement JSON to CSV converter for series observations
-- [ ] Handle nested JSON structures (flatten for CSV)
-- [ ] Implement converter for category data
-- [ ] Implement converter for release data
-- [ ] Implement converter for maps/GeoFRED data
-- [ ] Add proper CSV headers based on JSON structure
-- [ ] Handle edge cases (null values, nested arrays, special characters)
-- [ ] Write unit tests for JSON to CSV conversion
+- [x] Create `src/mcp_fred/utils/json_to_csv.py`
+- [x] Implement JSON to CSV converter for series observations
+- [x] Handle nested JSON structures (flatten for CSV)
+- [x] Implement converter for category data
+- [x] Implement converter for release data
+- [x] Implement converter for maps/GeoFRED data
+- [x] Add proper CSV headers based on JSON structure
+- [x] Handle edge cases (null values, nested arrays, special characters)
+- [x] Write unit tests for JSON to CSV conversion
 
 ### File Writing Utilities
 
 **[See: ARCHITECTURE.md → Streaming to Files](ARCHITECTURE.md#streaming-to-files)**
 **[See: API_MAPPING.md → Utility Components](API_MAPPING.md#utility-components)**
-- [ ] Create `src/mcp_fred/utils/file_writer.py`
-- [ ] Implement CSV writer with streaming support
-- [ ] Implement JSON writer with streaming support
-- [ ] Add chunked writing for large datasets
-- [ ] Implement progress tracking during writes
-- [ ] Add file size calculation and reporting
-- [ ] Handle data type conversions for file formats
-- [ ] Write unit tests for file writers
+- [x] Create `src/mcp_fred/utils/file_writer.py`
+- [x] Implement CSV writer with streaming support
+- [x] Implement JSON writer with streaming support
+- [x] Add chunked writing for large datasets
+- [x] Implement progress tracking during writes
+- [x] Add file size calculation and reporting
+- [x] Handle data type conversions for file formats
+- [x] Write unit tests for file writers
 
 ### Path Resolution & Security
 
 **[See: ARCHITECTURE.md → Security & Validation](ARCHITECTURE.md#security--validation)**
 **[See: API_MAPPING.md → Utility Components](API_MAPPING.md#utility-components)**
-- [ ] Create `src/mcp_fred/utils/path_resolver.py`
-- [ ] Implement secure path resolution with `FRED_STORAGE_DIR`
-- [ ] Add validation to prevent directory traversal attacks
-- [ ] Add check to prevent writing to MCP server directory
-- [ ] Support user-configurable storage directory (any local path)
-- [ ] Create project subdirectories automatically
-- [ ] Implement filename sanitization
-- [ ] Add reserved name checking (Windows compatibility)
-- [ ] Implement write permission validation
-- [ ] Write unit tests for path security
+- [x] Create `src/mcp_fred/utils/path_resolver.py`
+- [x] Implement secure path resolution with `FRED_STORAGE_DIR`
+- [x] Add validation to prevent directory traversal attacks
+- [x] Add check to prevent writing to MCP server directory
+- [x] Support user-configurable storage directory (any local path)
+- [x] Create project subdirectories automatically
+- [x] Implement filename sanitization
+- [x] Add reserved name checking (Windows compatibility)
+- [x] Implement write permission validation
+- [x] Write unit tests for path security
 
 ### Output Handler Integration
 
 **[See: ARCHITECTURE.md → Tool Parameter Design](ARCHITECTURE.md#tool-parameter-design)**
 **[See: API_MAPPING.md → Utility Components](API_MAPPING.md#utility-components)**
-- [ ] Create `src/mcp_fred/utils/output_handler.py`
-- [ ] Implement `ResultOutputHandler` class
+- [x] Create `src/mcp_fred/utils/output_handler.py`
+- [x] Implement `ResultOutputHandler` class
 - [ ] Add filename pattern generation with variables
-- [ ] Implement auto vs manual mode decision logic
-- [ ] Add project-based directory organization
-- [ ] Integrate token estimator for auto mode (tiktoken)
-- [ ] Integrate JSON to CSV converter for CSV output
-- [ ] Integrate file writers for file output
-- [ ] Add validation for output parameters
-- [ ] Write integration tests
+- [x] Implement auto vs manual mode decision logic
+- [x] Add project-based directory organization
+- [x] Integrate token estimator for auto mode (tiktoken)
+- [x] Integrate JSON to CSV converter for CSV output
+- [x] Integrate file writers for file output
+- [x] Add validation for output parameters
+- [x] Write integration tests
 
 ### Configuration for Large Data
 
 **[See: ARCHITECTURE.md → Configuration Management](ARCHITECTURE.md#configuration-management)**
-- [ ] Add `OutputConfig` class to `config.py`
-- [ ] Add environment variable loading for output settings
-- [ ] Add `FRED_STORAGE_DIR` configuration and validation
-- [ ] Support user-configurable storage directory path
-- [ ] Add default value: `./fred-data` if not specified
-- [ ] Add default values for all output parameters
-- [ ] Add Pydantic validation for output config
-- [ ] Add `FRED_JOB_RETENTION_HOURS` configuration
-- [ ] Document all configuration options in config.py
+- [x] Add `OutputConfig` class to `config.py`
+- [x] Add environment variable loading for output settings
+- [x] Add `FRED_STORAGE_DIR` configuration and validation
+- [x] Support user-configurable storage directory path
+- [x] Add default value: `./fred-data` if not specified
+- [x] Add default values for all output parameters
+- [x] Add Pydantic validation for output config
+- [x] Add `FRED_JOB_RETENTION_HOURS` configuration
+- [x] Document all configuration options in config.py
 
 ### Async Job Management
 
 **[See: ARCHITECTURE.md → Async Job Architecture](ARCHITECTURE.md#async-job-architecture)**
 **[See: API_MAPPING.md → Utility Components](API_MAPPING.md#utility-components)**
-- [ ] Create `src/mcp_fred/utils/job_manager.py`
-- [ ] Implement `JobManager` class with in-memory job storage
-- [ ] Implement job ID generation (UUID-based)
-- [ ] Implement job lifecycle management (create, update, complete, fail)
-- [ ] Add job status tracking (accepted, processing, completed, failed)
-- [ ] Add progress tracking (rows fetched, percent complete, elapsed time)
-- [ ] Implement job cleanup (auto-delete after 24 hours)
-- [ ] Add job retention configuration
-- [ ] Write unit tests for job manager
+- [x] Create `src/mcp_fred/utils/job_manager.py`
+- [x] Implement `JobManager` class with in-memory job storage
+- [x] Implement job ID generation (UUID-based)
+- [x] Implement job lifecycle management (create, update, complete, fail)
+- [x] Add job status tracking (accepted, processing, completed, failed)
+- [x] Add progress tracking (rows fetched, percent complete, elapsed time)
+- [x] Implement job cleanup (auto-delete after 24 hours)
+- [x] Add job retention configuration
+- [x] Write unit tests for job manager
 
 ### Background Job Processing
-- [ ] Create `src/mcp_fred/utils/background_worker.py`
-- [ ] Implement background task queue using asyncio
+- [x] Create `src/mcp_fred/utils/background_worker.py`
+- [x] Implement background task queue using asyncio
 - [ ] Add worker pool for concurrent job processing
-- [ ] Implement job retry logic for failed requests
-- [ ] Add exponential backoff for rate limit errors
-- [ ] Implement progress callbacks for job updates
-- [ ] Add graceful shutdown for background workers
-- [ ] Write integration tests for background processing
+- [x] Implement job retry logic for failed requests
+- [x] Add exponential backoff for rate limit errors
+- [x] Implement progress callbacks for job updates
+- [x] Add graceful shutdown for background workers
+- [x] Write integration tests for background processing
 
 ### Async Job Decision Logic
 - [ ] Add size estimation before executing requests
@@ -413,15 +450,15 @@
 #### Series Tool
 
 **[See: API_MAPPING.md → Series Endpoints](API_MAPPING.md#series-endpoints)** ⚠️ CRITICAL: Large data
-- [ ] Create `src/mcp_fred/tools/series.py`
-- [ ] Implement `fred_series` tool (CRITICAL: handles large observation datasets)
-- [ ] Add operation routing logic
-- [ ] Add parameter validation
-- [ ] Add output handling (output, format, project, filename params)
-- [ ] Integrate with `ResultOutputHandler` for large observations
-- [ ] Add streaming support for 100k+ observation requests
-- [ ] Add error handling
-- [ ] Write tool documentation
+- [x] Create `src/mcp_fred/tools/series.py`
+- [x] Implement `fred_series` tool (CRITICAL: handles large observation datasets)
+- [x] Add operation routing logic
+- [x] Add parameter validation
+- [x] Add output handling (output, format, project, filename params)
+- [x] Integrate with `ResultOutputHandler` for large observations
+- [x] Add streaming support for 100k+ observation requests
+- [x] Add error handling
+- [x] Write tool documentation
 
 #### Source Tool
 
@@ -450,66 +487,66 @@
 #### Maps Tool
 
 **[See: API_MAPPING.md → Maps Endpoints](API_MAPPING.md#maps-endpoints)** ⚠️ CRITICAL: Large data
-- [ ] Create `src/mcp_fred/tools/maps.py`
-- [ ] Implement `fred_maps` tool (CRITICAL: handles large geographical datasets)
-- [ ] Add operation routing logic
-- [ ] Add parameter validation
-- [ ] Add output handling (output, format, project, filename params)
-- [ ] Integrate with `ResultOutputHandler` for shape files and regional data
-- [ ] Add streaming support for large map data
-- [ ] Add error handling
-- [ ] Write tool documentation
+- [x] Create `src/mcp_fred/tools/maps.py`
+- [x] Implement `fred_maps` tool (CRITICAL: handles large geographical datasets)
+- [x] Add operation routing logic
+- [x] Add parameter validation
+- [x] Add output handling (output, format, project, filename params)
+- [x] Integrate with `ResultOutputHandler` for shape files and regional data
+- [x] Add streaming support for large map data
+- [x] Add error handling
+- [x] Write tool documentation
 
 #### Job Management Tools
 
 **[See: ARCHITECTURE.md → Async Job Management Tool](ARCHITECTURE.md#async-job-management-tool)**
 **[See: API_MAPPING.md → Job Management Tools](API_MAPPING.md#job-management-tools)**
-- [ ] Create `src/mcp_fred/tools/job_status.py`
-- [ ] Implement `fred_job_status` tool
-- [ ] Add job_id parameter validation
-- [ ] Return comprehensive status (progress, result, error)
-- [ ] Add error handling for invalid job IDs
-- [ ] Write tool documentation
+- [x] Create `src/mcp_fred/tools/job_status.py`
+- [x] Implement `fred_job_status` tool
+- [x] Add job_id parameter validation
+- [x] Return comprehensive status (progress, result, error)
+- [x] Add error handling for invalid job IDs
+- [x] Write tool documentation
 
-- [ ] Create `src/mcp_fred/tools/job_list.py` (Optional)
-- [ ] Implement `fred_job_list` tool
-- [ ] Add status filtering (completed, processing, failed)
-- [ ] Add pagination/limit support
-- [ ] Write tool documentation
+- [x] Create `src/mcp_fred/tools/job_list.py` (Optional)
+- [x] Implement `fred_job_list` tool
+- [x] Add status filtering (completed, processing, failed)
+- [x] Add pagination/limit support
+- [x] Write tool documentation
 
-- [ ] Create `src/mcp_fred/tools/job_cancel.py` (Optional)
-- [ ] Implement `fred_job_cancel` tool
-- [ ] Add cancellation logic
-- [ ] Clean up resources for cancelled jobs
-- [ ] Write tool documentation
+- [x] Create `src/mcp_fred/tools/job_cancel.py` (Optional)
+- [x] Implement `fred_job_cancel` tool
+- [x] Add cancellation logic
+- [x] Clean up resources for cancelled jobs
+- [x] Write tool documentation
 
 #### Project Management Tools
 
 **[See: ARCHITECTURE.md → Project Management Tools](ARCHITECTURE.md#project-management-tools)**
 **[See: API_MAPPING.md → Project Management Tools](API_MAPPING.md#project-management-tools)**
-- [ ] Create `src/mcp_fred/tools/project_list.py`
-- [ ] Implement `fred_project_list` tool
-- [ ] Add directory scanning logic for FRED_STORAGE_DIR
-- [ ] Calculate project metadata (file count, size, dates)
-- [ ] Add error handling for missing storage directory
-- [ ] Write tool documentation
+- [x] Create `src/mcp_fred/tools/project_list.py`
+- [x] Implement `fred_project_list` tool
+- [x] Add directory scanning logic for FRED_STORAGE_DIR
+- [x] Calculate project metadata (file count, size, dates)
+- [x] Add error handling for missing storage directory
+- [x] Write tool documentation
 
-- [ ] Create `src/mcp_fred/tools/project_create.py`
-- [ ] Implement `fred_project_create` tool
-- [ ] Add project name validation (alphanumeric, hyphens, underscores)
-- [ ] Create subdirectories (series, maps, releases, categories, sources, tags)
-- [ ] Create .project.json metadata file
-- [ ] Add error handling for existing projects
-- [ ] Write tool documentation
+- [x] Create `src/mcp_fred/tools/project_create.py`
+- [x] Implement `fred_project_create` tool
+- [x] Add project name validation (alphanumeric, hyphens, underscores)
+- [x] Create subdirectories (series, maps, releases, categories, sources, tags)
+- [x] Create .project.json metadata file
+- [x] Add error handling for existing projects
+- [x] Write tool documentation
 
-- [ ] Create `src/mcp_fred/tools/project_files.py`
-- [ ] Implement `fred_project_files` tool
-- [ ] Add file listing with metadata (size, rows, dates, format)
-- [ ] Add subdirectory filtering (series, maps, releases, etc.)
-- [ ] Add sorting options (name, size, modified, created)
-- [ ] Add pagination/limit support
-- [ ] Add error handling for missing projects
-- [ ] Write tool documentation
+- [x] Create `src/mcp_fred/tools/project_files.py`
+- [x] Implement `fred_project_files` tool
+- [x] Add file listing with metadata (size, rows, dates, format)
+- [x] Add subdirectory filtering (series, maps, releases, etc.)
+- [x] Add sorting options (name, size, modified, created)
+- [x] Add pagination/limit support
+- [x] Add error handling for missing projects
+- [x] Write tool documentation
 
 ---
 
@@ -619,9 +656,10 @@
 - [ ] Test filename generation and sanitization
 - [ ] Test JSON to CSV conversion for series data
 - [ ] Test JSON to CSV conversion for nested structures
+- [x] Test JSON to CSV conversion for GeoFRED shape/regional data
 - [ ] Test CSV writer with various data types
 - [ ] Test JSON writer with various data types
-- [ ] Test chunked writing for large datasets
+- [x] Test chunked writing for large datasets
 - [ ] Test project directory organization
 - [ ] Mock large datasets for testing
 
@@ -646,10 +684,10 @@
 - [ ] Test `fred_series` tool operations (including async mode)
 - [ ] Test `fred_source` tool operations
 - [ ] Test `fred_tag` tool operations
-- [ ] Test `fred_maps` tool operations (including async mode)
+- [x] Test `fred_maps` tool operations (including async mode)
 - [ ] Test `fred_job_status` tool
-- [ ] Test `fred_job_list` tool (optional)
-- [ ] Test `fred_job_cancel` tool (optional)
+- [x] Test `fred_job_list` tool (optional)
+- [x] Test `fred_job_cancel` tool (optional)
 - [ ] Test `fred_project_list` tool
 - [ ] Test `fred_project_create` tool
 - [ ] Test `fred_project_files` tool
@@ -658,8 +696,8 @@
 - [ ] Test job creation and ID generation
 - [ ] Test job status transitions (accepted → processing → completed)
 - [ ] Test job failure handling and retry logic
-- [ ] Test job progress tracking
-- [ ] Test job cleanup after retention period
+- [x] Test job progress tracking
+- [x] Test job cleanup after retention period
 - [ ] Test background worker task queue
 - [ ] Test concurrent job processing
 - [ ] Test rate limit handling with backoff

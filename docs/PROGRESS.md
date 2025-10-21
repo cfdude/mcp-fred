@@ -1,6 +1,6 @@
 # PROGRESS - MCP-FRED Completed Tasks
 
-**Last Updated:** 2025-10-08
+**Last Updated:** 2025-10-09
 
 This file tracks all completed development tasks for the MCP-FRED project. Tasks are moved here from TODO.md as they are completed.
 
@@ -199,6 +199,7 @@ This file tracks all completed development tasks for the MCP-FRED project. Tasks
 - ✅ Added `utils/background_worker.py` - Background task processing
 - ✅ Added `tools/job_status.py` - Status checking tool
 - ✅ Added optional tools: `job_list.py`, `job_cancel.py`
+- ✅ Registered job management tools with transport layer registry so MCP clients expose them automatically
 
 ### Key Decisions
 1. **When to use async**: > 10K rows OR estimated time > 10 seconds
@@ -513,6 +514,89 @@ This file tracks all completed development tasks for the MCP-FRED project. Tasks
 - **New Dependency**: respx (httpx mocking for tests)
 - **Total Dependencies**: 12 (7 core + 5 dev)
 - **Commit**: `docs(phase2): add rate limiting, retry logic, and testing patterns`
+
+---
+
+## Phase 4: Documentation Review (2025-10-08)
+
+- ✅ Reviewed MCP tool design and routing guidance (`docs/ARCHITECTURE.md`:822-878)
+- ✅ Confirmed configuration parameters and environment guidance for tool integration (`docs/ARCHITECTURE.md`:488-575)
+- ✅ Verified README tool summary and availability table (`README.md`:133-207)
+- 📌 Decision: existing documentation is sufficient; no additional Tool Implementation Guide required before implementation
+
+---
+
+## Phase 5: Documentation Review (2025-10-08)
+
+- ✅ Reviewed testing strategy overview (`docs/ARCHITECTURE.md`:1450-1464)
+- ✅ Confirmed detailed testing patterns in Development Guide (`docs/DEVELOPMENT_GUIDE.md`:205-275)
+- ✅ Cross-checked testing checklist in TODO backlog (`docs/TODO.md`:480-660)
+- 📌 Decision: current documentation covers testing expectations; defer extra testing guides until new patterns emerge
+
+---
+
+## Phase 3: Documentation Review (2025-10-08)
+
+- ✅ Read large data handling & async job sections (`docs/ARCHITECTURE.md`:120-340, 488-640) covering token limits, storage, utilities, job flows
+- ✅ Reviewed TODO Phase 3 checklist to confirm required utilities/tests (`docs/TODO.md`:160-320)
+- 📌 Decision: existing architecture guidance sufficient; no additional docs required before implementing utilities
+
+---
+
+## Series & Maps Documentation Review (2025-10-08)
+
+- ✅ Revisited MCP Tool Design and API mapping for series/maps coverage (`docs/ARCHITECTURE.md`:822-878,
+  `docs/API_MAPPING.md`:110-170)
+- ✅ Confirmed TODO backlog expectations for series/maps endpoints and models (`docs/TODO.md`:232-320)
+- 📌 Decision: Current docs adequate; proceed with implementation while noting remaining map-specific nuances during testing
+
+---
+
+## Sprint 2: Tool Layer & Tests (2025-10-08)
+
+- ✅ Implemented shared configuration and server bootstrap (`src/mcp_fred/config.py`, `src/mcp_fred/server.py`)
+- ✅ Added category/release/source/tag endpoint wrappers plus screen-only tool stubs with validation (`src/mcp_fred/api/endpoints/*.py`, `src/mcp_fred/tools/*.py`)
+- ✅ Expanded response models for category/release/source/tag payloads (`src/mcp_fred/api/models/responses.py`)
+- ✅ Added respx-based unit tests covering client retries/errors, endpoint responses, and tool routing to restore ≥80% coverage (`tests/`)
+- ✅ Updated dev tooling script to install ruff/pytest/pytest-cov/pytest-asyncio/respx (`scripts/install_dev_tools.sh`)
+- 📈 Coverage: 89.19% (`python3 -m pytest`)
+
+---
+
+## Sprint 3: Series & Maps Tooling (2025-10-08)
+
+- ✅ Delivered series endpoint module covering all `/fred/series/*` calls with validation (`src/mcp_fred/api/endpoints/series.py`)
+- ✅ Added maps endpoint module for GeoFRED operations (`src/mcp_fred/api/endpoints/maps.py`)
+- ✅ Implemented `fred_series` and `fred_maps` MCP tools with output handling and parameter validation (`src/mcp_fred/tools/series.py`, `src/mcp_fred/tools/maps.py`)
+- ✅ Expanded unit tests for new endpoints and tools, keeping coverage above target (`tests/test_api/test_endpoints.py`, `tests/test_tools/test_tools.py`)
+- ✅ Updated TODO backlog to reflect completed series/maps API and tool tasks (`docs/TODO.md`)
+- ✅ Introduced chunked CSV writer and regression tests to support large dataset streaming (`src/mcp_fred/utils/file_writer.py`, `tests/test_utils/test_file_writer.py`)
+- ✅ Documented practical usage tips for series/maps tools (`docs/API_MAPPING.md`)
+
+---
+
+## Sprint 3 Follow-Up: Large Data Enhancements (2025-10-09)
+
+- ✅ Enabled JSON→CSV conversion for GeoFRED responses and ensured map exports land in `maps/` directories.
+- ✅ Hooked CSV chunk progress into `JobManager.update_progress` so long writes surface row counts and paths.
+- ✅ Added job retention configuration (`FRED_JOB_RETENTION_HOURS`) with automatic cleanup on every job access.
+- ✅ Implemented background worker retry/backoff and surfaced retry metadata through job progress.
+- ✅ Expanded unit coverage (`tests/test_utils/test_output_handler.py`, `tests/test_utils/test_job_manager.py`) to lock in behaviour.
+- ✅ Flattened GeoFRED CSV exports and introduced dedicated tests (`src/mcp_fred/utils/json_to_csv.py`, `tests/test_utils/test_json_to_csv.py`, transport E2E coverage).
+
+- ✅ Upgraded `fred_series`/`fred_maps` tools to queue background jobs automatically for large exports with new async tests.
+- ✅ Enhanced job progress payloads to include byte counts and timestamps, keeping dashboard updates precise.
+- ✅ Background worker now auto-starts on submission and retention scenarios are covered by regression tests.
+
+---
+
+## Sprint 3 Follow-Up: Project Tooling (2025-10-09)
+
+- ✅ Delivered `fred_job_status` with validation, error handling, and screen/file output support.
+- ✅ Introduced `fred_project_list`, summarising project storage stats for each workspace.
+- ✅ Implemented `fred_project_create` to scaffold subdirectories and write `.project.json` metadata.
+- ✅ Added `fred_project_files` with subdirectory filtering, sorting, pagination, and metadata enrichment.
+- ✅ Backed the new tools with unit coverage (`tests/test_tools/test_tools.py`).
 
 ---
 

@@ -956,17 +956,43 @@ class FREDClient:
 
 ### STDIO Transport
 
-- **Use Case:** Local MCP client integration (Claude Desktop, etc.)
-- **Communication:** JSON-RPC over stdin/stdout
-- **Process Model:** MCP server runs as subprocess of client
-- **Lifecycle:** Server starts when client initializes, stops when client disconnects
+- **Use Case:** Local MCP clients (Claude Desktop, containers running `mcp-cli`).
+- **Protocol:** JSON-RPC messages are exchanged over the process `stdin`/`stdout` pipes.
+- **Launch Command:**
+
+  ```bash
+  export FRED_API_KEY="sk-your-key"
+  python -m mcp_fred
+  ```
+
+- **Integration:** Claude Desktop points at the Python module; `mcp-cli` can exercise
+  tools without a graphical host.
+- **Testing:** `python3 -m pytest tests/test_transports/test_stdio.py` covers request
+  routing, tool discovery, and error propagation.
 
 ### Streamable HTTP Transport
 
-- **Use Case:** Remote MCP server deployment
-- **Communication:** HTTP POST for messages, optional SSE for streaming
-- **Endpoint:** Single endpoint (e.g., `/mcp`)
-- **Authentication:** Supports bearer tokens, API keys, custom headers
+- **Use Case:** Remote deployment, Docker containers, or shared MCP servers.
+- **Protocol:** Standard HTTP POST for requests with optional Server-Sent Events for
+  streaming responses.
+- **Launch Command:**
+
+  ```bash
+  python -m mcp_fred --transport http --host 0.0.0.0 --port 8000
+  ```
+
+- **Example Request:**
+
+  ```bash
+  curl -X POST http://localhost:8000/mcp \
+       -H 'Content-Type: application/json' \
+       -d '{"jsonrpc":"2.0","id":"ping","method":"health.check"}'
+  ```
+
+- **Authentication:** Wire bearer tokens or API keys via standard HTTP headers; load
+  environment variables (`FRED_API_KEY`, `FRED_STORAGE_DIR`) before start-up.
+- **Testing:** `python3 -m pytest tests/test_transports/test_http.py` validates
+  transport negotiation and error responses.
 
 ---
 

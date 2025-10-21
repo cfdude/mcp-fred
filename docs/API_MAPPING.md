@@ -107,6 +107,15 @@ This document provides a comprehensive mapping between FRED API endpoints, MCP t
 - [TODO.md → Phase 3 → Async Job Management](TODO.md#async-job-management)
 - [TODO.md → Phase 4 → Series Tool](TODO.md#series-tool)
 
+### Usage Tips
+
+- Use `output="auto"` for everyday lookups; large observations auto-save to project storage using chunked CSV writers.
+- Provide `project` and optional `filename` to direct output (e.g., `fred_series(operation="get_observations", series_id="GDP", project="macro")`).
+- Combine `search` + `search_tags` to discover candidate series before fetching heavy observations.
+- `get_observations` automatically schedules a background job when row counts exceed the configured threshold; monitor `fred_job_status` for `rows_written`/`bytes_written`.
+- CSV exports include flattened metadata columns so nested properties (e.g., `location_state`) appear as individual fields.
+- When working with vintages, call `get_vintage_dates` first and loop through the returned dates for historical slices.
+
 ---
 
 ## Source Endpoints
@@ -182,6 +191,15 @@ This document provides a comprehensive mapping between FRED API endpoints, MCP t
 
 **TODO Reference:** [TODO.md → Phase 4 → Maps Tool](TODO.md#maps-tool)
 
+### Usage Tips
+
+- `get_shapes` returns GeoJSON-like dictionaries; prefer `output="file"` (default) to persist shape files under `maps/`.
+- Supply `series_id` to `get_series_data` for region-level statistics ready for choropleth rendering.
+- Pair `get_series_group` with `fred_series(search=...)` to surface compatible map series for dashboards.
+- Large map exports queue background jobs automatically; use `fred_job_status` to retrieve file paths once the worker completes.
+- CSV outputs flatten nested fields such as `properties_state_abbr`, `metadata_units`, and keep geometry serialized as JSON strings. Fixtures live in `tests/fixtures/maps/` for reference.
+- For quick inspection without saving, force `output="screen"`; responses remain limited by token estimator safeguards.
+
 ---
 
 ## Job Management Tools
@@ -193,6 +211,10 @@ This document provides a comprehensive mapping between FRED API endpoints, MCP t
 | `fred_job_status` | `src/mcp_fred/tools/job_status.py` | Check status of background jobs | [ARCHITECTURE.md → Async Job Management Tool](ARCHITECTURE.md#fred_job_status-tool) |
 | `fred_job_list` | `src/mcp_fred/tools/job_list.py` | List recent jobs (optional) | [ARCHITECTURE.md → fred_job_list Tool](ARCHITECTURE.md#fred_job_list-tool-optional) |
 | `fred_job_cancel` | `src/mcp_fred/tools/job_cancel.py` | Cancel running jobs (optional) | [ARCHITECTURE.md → fred_job_cancel Tool](ARCHITECTURE.md#fred_job_cancel-tool-optional) |
+
+- `fred_job_status` surfaces job metadata (progress, result, error, timestamps) for a single background operation.
+- `fred_job_list` supports filtering by status, pagination (`limit`, `offset`), and sorts jobs by most recent update.
+- `fred_job_cancel` marks a job as `cancelled` and records the optional user-supplied reason.
 
 **TODO Reference:** [TODO.md → Phase 4 → Job Management Tools](TODO.md#job-management-tools)
 
@@ -207,6 +229,10 @@ This document provides a comprehensive mapping between FRED API endpoints, MCP t
 | `fred_project_list` | `src/mcp_fred/tools/project_list.py` | List all projects in storage directory | [ARCHITECTURE.md → fred_project_list Tool](ARCHITECTURE.md#fred_project_list-tool) |
 | `fred_project_create` | `src/mcp_fred/tools/project_create.py` | Create new project directory | [ARCHITECTURE.md → fred_project_create Tool](ARCHITECTURE.md#fred_project_create-tool) |
 | `fred_project_files` | `src/mcp_fred/tools/project_files.py` | List files in a project | [ARCHITECTURE.md → fred_project_files Tool](ARCHITECTURE.md#fred_project_files-tool) |
+
+- `fred_project_list` returns aggregate metadata (`file_count`, `total_size_bytes`, `latest_modified`) for each project under `FRED_STORAGE_DIR`.
+- `fred_project_create` scaffolds the canonical subdirectories (series, maps, releases, categories, sources, tags) and writes `.project.json` metadata.
+- `fred_project_files` supports `subdir`, `sort_by` (`name`, `size`, `modified`), and pagination (`limit`, `offset`) while returning per-file size and timestamps.
 
 **TODO Reference:** [TODO.md → Phase 4 → Project Management Tools](TODO.md#project-management-tools)
 
