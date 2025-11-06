@@ -58,7 +58,9 @@ async def fred_release(context: ServerContext, operation: str, **kwargs: Any) ->
                 return err
             params = _common.build_query(kwargs)
             result = await releases.get(release_id, params=params or None)
-            return await _common.success_response(context, result, operation=operation, options=options)
+            return await _common.success_response(
+                context, result, operation=operation, options=options
+            )
 
         if operation == "get_dates":
             release_id, err = _common.require_int(kwargs, "release_id")

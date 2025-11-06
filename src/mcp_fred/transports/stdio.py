@@ -34,11 +34,19 @@ class STDIOTransport:
                     request = json.loads(line)
                 except json.JSONDecodeError:
                     await self._write_response(
-                        {"error": {"code": "INVALID_JSON", "message": "Failed to decode request"}}
+                        {
+                            "jsonrpc": "2.0",
+                            "id": None,
+                            "error": {
+                                "code": -32700,
+                                "message": "Parse error: Failed to decode request",
+                            },
+                        }
                     )
                     continue
                 response = await self.handle_request(request)
-                await self._write_response(response)
+                if response is not None:  # Don't send responses for notifications
+                    await self._write_response(response)
         finally:
             await self._context.aclose()
 
@@ -49,17 +57,61 @@ class STDIOTransport:
         method = request.get("method")
         params = request.get("params", {})
 
+        # Handle notifications (no response needed for notifications)
+        if method and method.startswith("notifications/"):
+            return None  # Notifications don't get responses
+
         try:
+            if method == "initialize":
+                return {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {
+                        "protocolVersion": "2024-11-05",
+                        "capabilities": {"tools": {}},
+                        "serverInfo": {"name": "mcp-fred", "version": "0.1.0"},
+                    },
+                }
+
             if method == "tools/list":
+                # Define common parameter schemas
+                common_params = {
+                    "series_id": {"type": "string", "description": "FRED series ID"},
+                    "category_id": {"type": "integer", "description": "Category ID"},
+                    "release_id": {"type": "integer", "description": "Release ID"},
+                    "source_id": {"type": "integer", "description": "Source ID"},
+                    "tag_name": {"type": "string", "description": "Tag name"},
+                    "search_text": {"type": "string", "description": "Search query"},
+                    "series_search_text": {"type": "string", "description": "Series search query"},
+                    "shape": {"type": "string", "description": "Geographic shape type"},
+                    "project": {"type": "string", "description": "Project name"},
+                    "job_id": {"type": "string", "description": "Job ID"},
+                    "limit": {"type": "integer", "description": "Result limit"},
+                    "offset": {"type": "integer", "description": "Result offset"},
+                    "format": {"type": "string", "description": "Output format (csv/json)"},
+                    "filename": {"type": "string", "description": "Custom filename"},
+                }
+
                 tools = [
                     {
                         "name": spec.name,
-                        "summary": spec.summary,
-                        "optional": spec.optional,
+                        "description": spec.summary,
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "operation": {
+                                    "type": "string",
+                                    "description": "Operation to perform",
+                                },
+                                **common_params,  # Include all common params for all tools
+                            },
+                            "required": ["operation"],
+                            "additionalProperties": True,
+                        },
                     }
                     for spec in TOOL_REGISTRY.values()
                 ]
-                return {"id": request_id, "result": {"tools": tools}}
+                return {"jsonrpc": "2.0", "id": request_id, "result": {"tools": tools}}
 
             if method == "tools/call":
                 name = params.get("name")
@@ -72,17 +124,32 @@ class STDIOTransport:
                 handler = TOOL_HANDLERS[name]
                 async with self._lock:
                     result = await handler(self._context, operation, **arguments)
-                return {"id": request_id, "result": {"tool": name, "data": result}}
+                return {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {
+                        "content": [
+                            {"type": "text", "text": json.dumps(result, indent=2, default=str)}
+                        ]
+                    },
+                }
 
             if method == "ping":
-                return {"id": request_id, "result": {"status": "ok"}}
+                return {"jsonrpc": "2.0", "id": request_id, "result": {}}
+
+            if method == "prompts/list":
+                return {"jsonrpc": "2.0", "id": request_id, "result": {"prompts": []}}
+
+            if method == "resources/list":
+                return {"jsonrpc": "2.0", "id": request_id, "result": {"resources": []}}
 
             raise ValueError(f"Unsupported method '{method}'")
         except Exception as exc:  # pragma: no cover - defensive
             return {
+                "jsonrpc": "2.0",
                 "id": request_id,
                 "error": {
-                    "code": "TRANSPORT_ERROR",
+                    "code": -32000,
                     "message": str(exc),
                 },
             }

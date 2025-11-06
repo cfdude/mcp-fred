@@ -38,7 +38,9 @@ async def fred_source(context: ServerContext, operation: str, **kwargs: Any) -> 
                 return err
             params = _common.build_query(kwargs)
             result = await sources.get(source_id, params=params or None)
-            return await _common.success_response(context, result, operation=operation, options=options)
+            return await _common.success_response(
+                context, result, operation=operation, options=options
+            )
 
         if operation == "get_releases":
             source_id, err = _common.require_int(kwargs, "source_id")

@@ -16,7 +16,6 @@ from mcp_fred.tools.job_list import fred_job_list
 from mcp_fred.tools.job_status import fred_job_status
 from mcp_fred.tools.maps import fred_maps
 from mcp_fred.tools.project_create import fred_project_create
-from mcp_fred.tools.project_files import fred_project_files
 from mcp_fred.tools.project_list import fred_project_list
 from mcp_fred.tools.release import fred_release
 from mcp_fred.tools.series import fred_series
@@ -552,95 +551,6 @@ async def test_fred_project_create_duplicate(server_context):
 
     response = await fred_project_create(server_context, "create", project=project_name)
     assert response["error"]["code"] == "PROJECT_EXISTS"
-
-    shutil.rmtree(project_dir, ignore_errors=True)
-
-
-@pytest.mark.asyncio
-async def test_fred_project_files(server_context):
-    project_name = "project-files-demo"
-    root = server_context.path_resolver.root
-    project_dir = root / project_name
-    shutil.rmtree(project_dir, ignore_errors=True)
-    data_dir = project_dir / "series"
-    data_dir.mkdir(parents=True, exist_ok=True)
-    (data_dir / "a.csv").write_text("date,value\n", encoding="utf-8")
-    (data_dir / "b.csv").write_text("date,value\n", encoding="utf-8")
-
-    response = await fred_project_files(
-        server_context, "list", project=project_name, subdir="series", sort_by="name"
-    )
-    assert response["status"] == "success"
-    files = response["data"]["files"]
-    assert len(files) == 2
-    assert files[0]["relative_path"].endswith("a.csv")
-
-    shutil.rmtree(project_dir, ignore_errors=True)
-
-
-@pytest.mark.asyncio
-async def test_fred_project_files_missing_project(server_context):
-    response = await fred_project_files(server_context, "list", project="nope")
-    assert response["error"]["code"] == "PROJECT_NOT_FOUND"
-
-
-@pytest.mark.asyncio
-async def test_fred_project_files_invalid_subdir(server_context):
-    project_name = "project-files-invalid"
-    root = server_context.path_resolver.root
-    project_dir = root / project_name
-    project_dir.mkdir(parents=True, exist_ok=True)
-
-    response = await fred_project_files(
-        server_context, "list", project=project_name, subdir="unknown"
-    )
-    assert response["error"]["code"] == "INVALID_SUBDIRECTORY"
-
-    shutil.rmtree(project_dir, ignore_errors=True)
-
-
-@pytest.mark.asyncio
-async def test_fred_project_files_invalid_sorting(server_context):
-    project_name = "project-files-sorting"
-    root = server_context.path_resolver.root
-    project_dir = root / project_name
-    shutil.rmtree(project_dir, ignore_errors=True)
-    data_dir = project_dir / "series"
-    data_dir.mkdir(parents=True, exist_ok=True)
-    (data_dir / "item.csv").write_text("date,value\n", encoding="utf-8")
-
-    invalid_sort = await fred_project_files(
-        server_context, "list", project=project_name, subdir="series", sort_by="sizey"
-    )
-    assert invalid_sort["error"]["code"] == "INVALID_SORT_FIELD"
-
-    invalid_order = await fred_project_files(
-        server_context, "list", project=project_name, subdir="series", sort_order="sideways"
-    )
-    assert invalid_order["error"]["code"] == "INVALID_SORT_ORDER"
-
-    shutil.rmtree(project_dir, ignore_errors=True)
-
-
-@pytest.mark.asyncio
-async def test_fred_project_files_limit_offset_validation(server_context):
-    project_name = "project-files-limits"
-    root = server_context.path_resolver.root
-    project_dir = root / project_name
-    shutil.rmtree(project_dir, ignore_errors=True)
-    data_dir = project_dir / "series"
-    data_dir.mkdir(parents=True, exist_ok=True)
-    (data_dir / "a.csv").write_text("date,value\n", encoding="utf-8")
-
-    negative_limit = await fred_project_files(
-        server_context, "list", project=project_name, subdir="series", limit=-1
-    )
-    assert negative_limit["error"]["code"] == "INVALID_PARAMETER"
-
-    invalid_offset = await fred_project_files(
-        server_context, "list", project=project_name, subdir="series", offset="bad"
-    )
-    assert invalid_offset["error"]["code"] == "INVALID_PARAMETER"
 
     shutil.rmtree(project_dir, ignore_errors=True)
 

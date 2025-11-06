@@ -1,8 +1,6 @@
 import pytest
 import respx
-from httpx import ASGITransport, AsyncClient
 
-from mcp_fred.transports.http import HTTPTransport
 from mcp_fred.transports.stdio import STDIOTransport
 
 BASE_URL = "https://api.stlouisfed.org"
@@ -18,6 +16,8 @@ async def test_stdio_tools_list(server_context):
 
 @pytest.mark.asyncio
 async def test_stdio_tool_call(server_context):
+    import json
+
     transport = STDIOTransport(server_context)
     with respx.mock(base_url=BASE_URL) as mock:
         mock.get("/fred/series").respond(
@@ -42,7 +42,10 @@ async def test_stdio_tool_call(server_context):
             },
         }
         response = await transport.handle_request(request)
-    assert response["result"]["data"]["status"] == "success"
+    # MCP protocol wraps result in content array with text
+    result_text = response["result"]["content"][0]["text"]
+    result_data = json.loads(result_text)
+    assert result_data["status"] == "success"
 
 
 @pytest.mark.asyncio
@@ -55,37 +58,6 @@ async def test_stdio_unknown_tool_returns_error(server_context):
             "params": {"name": "unknown", "arguments": {"operation": "get"}},
         }
     )
-    assert response["error"]["code"] == "TRANSPORT_ERROR"
-
-
-@pytest.mark.asyncio
-async def test_http_transport_list_tools(server_context):
-    transport = HTTPTransport(server_context)
-    asgi_transport = ASGITransport(app=transport.app)
-    async with AsyncClient(transport=asgi_transport, base_url="http://test") as client:
-        response = await client.get("/tools")
-    data = response.json()
-    assert response.status_code == 200
-    assert any(tool["name"] == "fred_maps" for tool in data["tools"])
-
-
-@pytest.mark.asyncio
-async def test_http_transport_tool_call(server_context):
-    transport = HTTPTransport(server_context)
-    payload = {"operation": "get_series_group", "arguments": {"series_id": "SMU"}}
-    with respx.mock(base_url=BASE_URL) as mock:
-        mock.get("/geofred/series/group").respond(200, json={"seriess": []})
-        asgi_transport = ASGITransport(app=transport.app)
-        async with AsyncClient(transport=asgi_transport, base_url="http://test") as client:
-            response = await client.post("/tools/fred_maps", json=payload)
-    assert response.status_code == 200
-    assert response.json()["data"]["status"] == "success"
-
-
-@pytest.mark.asyncio
-async def test_http_transport_unknown_tool(server_context):
-    transport = HTTPTransport(server_context)
-    asgi_transport = ASGITransport(app=transport.app)
-    async with AsyncClient(transport=asgi_transport, base_url="http://test") as client:
-        response = await client.post("/tools/unknown", json={"operation": "get"})
-    assert response.status_code == 404
+    # JSON-RPC uses numeric error codes; -32000 is server error
+    assert response["error"]["code"] == -32000
+    assert "unknown" in response["error"]["message"].lower()

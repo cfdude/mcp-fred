@@ -6,7 +6,6 @@ from .job_list import fred_job_list
 from .job_status import fred_job_status
 from .maps import fred_maps
 from .project_create import fred_project_create
-from .project_files import fred_project_files
 from .project_list import fred_project_list
 from .release import fred_release
 from .series import fred_series
@@ -20,7 +19,6 @@ __all__ = [
     "fred_job_status",
     "fred_maps",
     "fred_project_create",
-    "fred_project_files",
     "fred_project_list",
     "fred_release",
     "fred_series",

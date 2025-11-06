@@ -33,7 +33,9 @@ async def fred_category(context: ServerContext, operation: str, **kwargs: Any) -
                 return err
             params = _common.build_query(kwargs)
             result = await context.categories.get(category_id, params=params or None)
-            return await _common.success_response(context, result, operation=operation, options=options)
+            return await _common.success_response(
+                context, result, operation=operation, options=options
+            )
 
         if operation == "list_children":
             category_id, err = _common.require_int(kwargs, "category_id")
@@ -99,7 +101,9 @@ async def fred_category(context: ServerContext, operation: str, **kwargs: Any) -
             if err:
                 return err
             params = _common.build_query(kwargs)
-            result = await context.categories.list_related_tags(category_id, tag_names, params=params or None)
+            result = await context.categories.list_related_tags(
+                category_id, tag_names, params=params or None
+            )
             return await _common.success_response(
                 context,
                 result,

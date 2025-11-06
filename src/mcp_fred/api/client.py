@@ -198,10 +198,7 @@ class FREDClient:
                     ) from exc
             except httpx.HTTPStatusError as exc:
                 status_code = exc.response.status_code
-                if (
-                    status_code in self.RETRYABLE_STATUS_CODES
-                    and attempt < self.config.max_retries
-                ):
+                if status_code in self.RETRYABLE_STATUS_CODES and attempt < self.config.max_retries:
                     delay = self._compute_retry_delay(attempt)
                     logger.warning(
                         "FRED request retry %s for %s %s (status %s) in %.2fs",
@@ -253,7 +250,7 @@ class FREDClient:
                 ) from exc
 
     def _compute_retry_delay(self, attempt: int) -> float:
-        base_delay = self.config.retry_backoff_factor ** attempt
+        base_delay = self.config.retry_backoff_factor**attempt
         jitter_range = base_delay * self.config.retry_jitter
         if jitter_range:
             return base_delay + random.uniform(-jitter_range, jitter_range)
@@ -267,16 +264,24 @@ class FREDClient:
         }
 
         if status_code == 400:
-            return FREDAPIError("INVALID_REQUEST", "Invalid parameters provided to FRED API", details=details)
+            return FREDAPIError(
+                "INVALID_REQUEST", "Invalid parameters provided to FRED API", details=details
+            )
         if status_code == 401:
-            return FREDAPIError("INVALID_API_KEY", "FRED API key is invalid or missing", details=details)
+            return FREDAPIError(
+                "INVALID_API_KEY", "FRED API key is invalid or missing", details=details
+            )
         if status_code == 404:
-            return FREDAPIError("NOT_FOUND", "Requested FRED resource was not found", details=details)
+            return FREDAPIError(
+                "NOT_FOUND", "Requested FRED resource was not found", details=details
+            )
         if status_code == 429:
             retry_after = exc.response.headers.get("Retry-After")
             if retry_after:
                 details["retry_after"] = retry_after
-            return FREDAPIError("RATE_LIMIT_EXCEEDED", "FRED API rate limit exceeded", details=details)
+            return FREDAPIError(
+                "RATE_LIMIT_EXCEEDED", "FRED API rate limit exceeded", details=details
+            )
         if status_code >= 500:
             return FREDAPIError("SERVER_ERROR", "FRED API server error", details=details)
         return FREDAPIError(

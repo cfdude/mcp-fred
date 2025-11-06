@@ -11,7 +11,7 @@ from __future__ import annotations
 from datetime import date  # noqa: TC003
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class FredBaseModel(BaseModel):
@@ -33,8 +33,8 @@ class PaginationMetadata(FredBaseModel):
 class RealtimeWindow(FredBaseModel):
     """Realtime window metadata common to most FRED responses."""
 
-    realtime_start: date
-    realtime_end: date
+    realtime_start: date | None = None
+    realtime_end: date | None = None
 
 
 class Category(FredBaseModel):
@@ -73,6 +73,18 @@ class ReleaseSingleResponse(RealtimeWindow):
     """Response returned by singular release fetch endpoints."""
 
     release: Release
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_from_releases_array(cls, data: Any) -> Any:
+        """Handle FRED API returning releases array instead of single release."""
+        if isinstance(data, dict) and "releases" in data and "release" not in data:
+            # Extract first release from releases array
+            releases = data.get("releases", [])
+            if releases and isinstance(releases, list):
+                # Create new dict with singular 'release' field
+                return {**data, "release": releases[0]}
+        return data
 
 
 class ReleaseDate(FredBaseModel):
