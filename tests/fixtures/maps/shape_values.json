@@ -1,0 +1,66 @@
+{
+  "shape_values": [
+    {
+      "id": "01",
+      "name": "Alabama",
+      "geography": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -88.0,
+              30.2
+            ],
+            [
+              -85.0,
+              30.2
+            ],
+            [
+              -85.0,
+              35.0
+            ],
+            [
+              -88.0,
+              30.2
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "region": "South",
+        "state_abbr": "AL"
+      }
+    },
+    {
+      "id": "02",
+      "name": "Alaska",
+      "geography": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              -170.0,
+              51.0
+            ],
+            [
+              -129.0,
+              51.0
+            ],
+            [
+              -129.0,
+              71.0
+            ],
+            [
+              -170.0,
+              51.0
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "region": "West",
+        "state_abbr": "AK"
+      }
+    }
+  ]
+}

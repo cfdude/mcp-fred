@@ -1,0 +1,68 @@
+# MCP-FRED Dependencies
+# Python 3.11+ required
+
+# ===========================
+# Core Runtime Dependencies
+# ===========================
+
+# FastAPI - Web framework for HTTP transport and async request handling
+# Used for: HTTP transport implementation, request/response handling, SSE streaming
+fastapi>=0.100.0,<1.0.0
+
+# Python MCP SDK - Official Model Context Protocol implementation
+# Used for: MCP server implementation, tool registration, STDIO transport
+mcp>=0.1.0
+
+# httpx - Async HTTP client for FRED API requests
+# Used for: FRED API client, all endpoint implementations, rate limiting
+httpx>=0.24.0,<1.0.0
+
+# pydantic - Data validation and settings management
+# Used for: Configuration management, API response models, tool parameter validation
+pydantic>=2.0.0,<3.0.0
+
+# python-dotenv - Load environment variables from .env file
+# Used for: Development configuration, loading .env file
+python-dotenv>=1.0.0
+
+# tiktoken - Accurate token counting for AI context management
+# Used for: Token estimation, auto vs file output decision, large dataset detection
+# Size: ~2.7 MB (acceptable overhead for accuracy)
+tiktoken>=0.5.0,<1.0.0
+
+# ===========================
+# Development Dependencies
+# ===========================
+
+# Ruff - Fast Python linter and formatter (Rust-based, 10-100x faster)
+# Used for: Code linting, formatting, import sorting
+ruff>=0.1.0
+
+# pytest - Testing framework
+# Used for: All testing (unit, integration), 80% coverage target
+pytest>=7.0.0,<8.0.0
+
+# pytest-asyncio - Async test support for pytest
+# Used for: Testing async functions, async fixtures
+pytest-asyncio>=0.21.0
+
+# pytest-cov - Code coverage reporting for pytest
+# Used for: Coverage reporting (HTML, terminal), enforcing 80% minimum
+pytest-cov>=4.0.0
+
+# respx - Mock httpx requests for testing
+# Used for: Mocking FRED API responses in tests, testing retry/error handling
+respx>=0.20.0
+
+# ===========================
+# Optional Dependencies
+# ===========================
+
+# Uncomment for production deployments with distributed caching
+# redis>=4.0.0
+
+# Uncomment for structured logging
+# structlog>=23.0.0
+
+# Uncomment for Prometheus metrics
+# prometheus-client>=0.17.0

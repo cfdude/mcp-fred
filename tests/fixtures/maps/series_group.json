@@ -1,0 +1,16 @@
+{
+  "seriess": [
+    {
+      "series_id": "SMU56000000500000001A",
+      "title": "All Employees: Total Nonfarm in Wyoming",
+      "seasonal_adjustment": "NSA",
+      "frequency": "Monthly"
+    },
+    {
+      "series_id": "SMU06000000500000001A",
+      "title": "All Employees: Total Nonfarm in California",
+      "seasonal_adjustment": "NSA",
+      "frequency": "Monthly"
+    }
+  ]
+}
