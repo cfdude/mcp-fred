@@ -7,6 +7,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- CI/CD infrastructure with comprehensive testing and security scanning
+- Pre-commit hooks for local development
+- Documentation updates for clean Markdown rendering
+
+---
+
+## [0.1.0] - 2025-11-13
+
+### Added
+- **MCPB Extension Support** - Claude Desktop Extension packaging
+  - Cross-platform Node.js launcher for bundled uv binaries
+  - Support for macOS (ARM64/x64), Linux (x64), Windows (x64)
+  - Automated build script with binary download
+  - Single `.mcpb` file works across all platforms
+  - Extension documentation (EXTENSION.md, BUNDLED_UV.md)
+- **CI/CD Infrastructure** - Comprehensive automated testing and security
+  - GitHub Actions workflows (ci.yml, security.yml)
+  - Tests run on Python 3.11 and 3.12
+  - Code formatting validation (ruff format)
+  - Linting checks (ruff check)
+  - 80% code coverage enforcement
+  - Codecov integration
+  - Secret scanning with Gitleaks
+  - Dependency vulnerability scanning (pip-audit)
+  - Hardcoded secret pattern detection
+  - Weekly security scans
+- **Pre-commit Hooks** - Local validation before commits
+  - Automated formatting, linting, and test checks
+  - Coverage validation
+  - Easy installation script
+  - Clear error messages and fix suggestions
+- **Documentation**
+  - CI_CD.md - Complete CI/CD workflow documentation
+  - .gitleaks.toml - Secret scanning configuration
+  - Updated README with extension and CI/CD information
+
+### Changed
+- README.md completely rewritten with clean Markdown formatting
+  - Removed HTML tags and excessive formatting
+  - Improved section structure and flow
+  - Added CI/CD section
+  - Removed internal project tracking information
+- requirements.txt simplified (removed comments, kept dependencies only)
+
+### Fixed
+- README.md formatting issues on GitHub
+- Typo in API_MAPPING.md reference
+- Unsigned commits in CI/CD PR (rebased with signed commits)
+
+### Security
+- Gitleaks integration for secret detection
+- Dependency vulnerability scanning
+- Pattern detection for hardcoded secrets
+
 ### Added (Phase 2 Documentation - 2025-10-08)
 - **Rate Limiting & Retry Logic section in ARCHITECTURE.md**
   - FRED API limits: 120 req/min, HTTP 429 response handling
@@ -240,5 +295,6 @@ Changes are grouped by the following categories:
 
 ---
 
-[Unreleased]: https://github.com/cfdude/mcp-fred/compare/v0.0.1...HEAD
+[Unreleased]: https://github.com/cfdude/mcp-fred/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/cfdude/mcp-fred/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/cfdude/mcp-fred/releases/tag/v0.0.1
