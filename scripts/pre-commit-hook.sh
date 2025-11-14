@@ -53,7 +53,7 @@ echo
 # Check coverage
 echo "📊 Checking code coverage..."
 coverage_percent=$(uv run coverage report --format=total 2>/dev/null || echo "0")
-if (( $(echo "$coverage_percent < 80" | bc -l) )); then
+if ! python3 -c "exit(0 if float('$coverage_percent') >= 80 else 1)" 2>/dev/null; then
     echo "⚠️  Warning: Coverage ${coverage_percent}% is below 80% threshold"
     echo "   Consider adding more tests"
     # Don't fail on coverage, just warn
