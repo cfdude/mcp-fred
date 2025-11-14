@@ -386,9 +386,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Issues: [GitHub Issues](https://github.com/cfdude/mcp-fred/issues)
 - FRED API Docs: [fred.stlouisfed.org/docs/api](https://fred.stlouisfed.org/docs/api/fred/)
 - MCP Specification: [modelcontextprotocol.io](https://modelcontextprotocol.io/)
-
----
-
-**Current Status**: v0.1.0 - Phase 1 Complete (Project Setup & Infrastructure)
-
-**Next Phase**: Phase 2 - Core API Client Implementation
