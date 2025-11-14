@@ -193,5 +193,4 @@ Thumbs.db
 .claude/
 .mcp.json
 .mcpbignore
-*-conversation.txt
 coverage.json
