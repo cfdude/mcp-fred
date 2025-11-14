@@ -39,6 +39,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# PyPI publishing
+.pypirc
+
 # PyInstaller
 *.manifest
 *.spec
@@ -183,3 +186,11 @@ bin/win32-x64/
 
 # OS specific
 Thumbs.db
+
+# ===========================
+# Claude Code / MCP
+# ===========================
+.claude/
+.mcp.json
+.mcpbignore
+coverage.json

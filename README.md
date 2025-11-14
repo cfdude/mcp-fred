@@ -4,6 +4,7 @@ Model Context Protocol server for Federal Reserve Economic Data (FRED) API
 
 A comprehensive MCP server providing access to all FRED API endpoints with intelligent large data handling, project-based storage, and async job processing for AI assistants like Claude.
 
+[![PyPI version](https://img.shields.io/pypi/v/mcp-fred.svg)](https://pypi.org/project/mcp-fred/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
@@ -24,11 +25,49 @@ A comprehensive MCP server providing access to all FRED API endpoints with intel
 
 ## Quick Start
 
-### Two Installation Options
+### Three Installation Options
 
-#### Option 1: Claude Desktop Extension (Recommended)
+#### Option 1: PyPI Installation (Easiest)
 
-The easiest way to get started - no manual setup required!
+Install directly from PyPI using pip or uv:
+
+```bash
+# Using pip
+pip install mcp-fred
+
+# Or using uv (faster)
+uv pip install mcp-fred
+```
+
+Usage with Claude Desktop:
+
+Add to your Claude Desktop configuration file:
+
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "fred": {
+      "command": "uv",
+      "args": ["--directory", "/path/to/your/virtualenv", "run", "mcp-fred"],
+      "env": {
+        "FRED_API_KEY": "your_api_key_here",
+        "FRED_STORAGE_DIR": "/Users/username/Documents/fred-data"
+      }
+    }
+  }
+}
+```
+
+Restart Claude Desktop, and the FRED tools will be available!
+
+---
+
+#### Option 2: Claude Desktop Extension
+
+The no-setup option - includes bundled Python environment!
 
 Requirements:
 - Python 3.11+
@@ -44,7 +83,7 @@ See [EXTENSION.md](EXTENSION.md) for detailed instructions and troubleshooting.
 
 ---
 
-#### Option 2: Manual Installation
+#### Option 3: Manual Installation from Source
 
 Prerequisites:
 - Python 3.11 or higher
@@ -292,6 +331,28 @@ ruff check --fix .
 - [DEVELOPMENT_GUIDE.md](docs/DEVELOPMENT_GUIDE.md) - Developer setup guide
 - [DEPENDENCIES.md](docs/DEPENDENCIES.md) - Why each dependency was chosen
 - [TODO.md](docs/TODO.md) - Development task list (8 phases)
+- [CI_CD.md](docs/CI_CD.md) - CI/CD workflows and pre-commit hooks
+
+### CI/CD
+
+Automated testing and security checks run on every commit and pull request.
+
+**Install pre-commit hook** (recommended for development):
+```bash
+./scripts/install-pre-commit-hook.sh
+```
+
+The hook runs before each commit:
+- Code formatting check (ruff)
+- Linting (ruff)
+- Full test suite (pytest)
+- Coverage validation (80% minimum)
+
+**GitHub Actions workflows:**
+- CI: Tests, formatting, linting on Python 3.11 & 3.12
+- Security: Secret scanning, dependency vulnerabilities
+
+See [CI_CD.md](docs/CI_CD.md) for complete details.
 
 ---
 

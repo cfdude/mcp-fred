@@ -1,0 +1,71 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+  schedule:
+    # Run weekly on Mondays at 9am UTC
+    - cron: '0 9 * * 1'
+
+jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for all branches
+
+    - name: Run Gitleaks
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  dependency-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+
+    - name: Set up Python 3.12
+      run: uv python install 3.12
+
+    - name: Install dependencies
+      run: uv sync --all-extras --dev
+
+    - name: Run pip-audit for dependency vulnerabilities
+      run: |
+        uv tool install pip-audit
+        uv tool run pip-audit --desc
+      continue-on-error: true
+
+    - name: Check for known security issues
+      run: |
+        # Check for common security anti-patterns
+        echo "Checking for hardcoded secrets patterns..."
+
+        # Check for API keys in code (20+ alphanumeric characters)
+        if grep -r -E "api[_-]key\s*=\s*['\"][a-zA-Z0-9]{20,}['\"]" src/ --exclude-dir=__pycache__ --exclude="*.pyc"; then
+          echo "WARNING: Possible hardcoded API key found"
+          exit 1
+        fi
+
+        # Check for tokens in code (20+ alphanumeric characters)
+        if grep -r -E "token\s*=\s*['\"][a-zA-Z0-9]{20,}['\"]" src/ --exclude-dir=__pycache__ --exclude="*.pyc"; then
+          echo "WARNING: Possible hardcoded token found"
+          exit 1
+        fi
+
+        # Check for passwords in code (20+ alphanumeric characters)
+        if grep -r -E "password\s*=\s*['\"][a-zA-Z0-9]{20,}['\"]" src/ --exclude-dir=__pycache__ --exclude="*.pyc"; then
+          echo "WARNING: Possible hardcoded password found"
+          exit 1
+        fi
+
+        echo "No obvious hardcoded secrets found"

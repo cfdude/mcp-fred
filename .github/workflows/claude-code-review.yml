@@ -3,6 +3,10 @@ name: Claude Code Review
 on:
   pull_request:
     types: [opened, synchronize]
+    # Skip when workflow files are modified (can't validate workflow changes until merged to main)
+    paths-ignore:
+      - '.github/workflows/claude-code-review.yml'
+      - '.github/workflows/claude.yml'
     # Optional: Only run on specific file changes
     # paths:
     #   - "src/**/*.ts"
@@ -19,6 +23,7 @@ jobs:
     #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
 
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # Prevent 3+ hour hangs
     permissions:
       contents: read
       pull-requests: read
@@ -31,8 +36,26 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb', '**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
       - name: Run Claude Code Review
         id: claude-review
+        timeout-minutes: 10  # Individual step timeout
+        env:
+          ACTIONS_STEP_DEBUG: true  # Enable verbose logging
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -54,4 +77,3 @@ jobs:
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
           claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
-
