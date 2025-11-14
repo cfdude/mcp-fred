@@ -1,0 +1,133 @@
+{
+  "manifest_version": "0.3",
+  "name": "mcp-fred",
+  "display_name": "FRED Economic Data",
+  "version": "0.1.0",
+  "description": "Model Context Protocol server for Federal Reserve Economic Data (FRED) API",
+  "long_description": "A comprehensive MCP server providing access to all FRED API endpoints with intelligent large data handling, project-based storage, and async job processing. Includes 12 MCP tools covering 50+ FRED API endpoints for categories, releases, series, sources, tags, and geographic maps. Features conservative token estimation, automatic file saving for large datasets, and background job processing for very large datasets.",
+  "author": {
+    "name": "cfdude",
+    "email": "cfdude@users.noreply.github.com",
+    "url": "https://github.com/cfdude"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cfdude/mcp-fred.git"
+  },
+  "homepage": "https://github.com/cfdude/mcp-fred",
+  "documentation": "https://github.com/cfdude/mcp-fred/blob/main/README.md",
+  "support": "https://github.com/cfdude/mcp-fred/issues",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "fred",
+    "federal-reserve",
+    "economic-data",
+    "api",
+    "claude",
+    "economics",
+    "data-analysis"
+  ],
+  "server": {
+    "type": "python",
+    "entry_point": "src/mcp_fred/__main__.py",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/bin/uv-launcher.js",
+        "run",
+        "--directory",
+        "${__dirname}",
+        "python",
+        "-m",
+        "mcp_fred"
+      ],
+      "env": {
+        "PYTHONPATH": "${__dirname}/src",
+        "FRED_API_KEY": "${user_config.fred_api_key}",
+        "FRED_STORAGE_DIR": "${user_config.storage_directory}",
+        "FRED_OUTPUT_FORMAT": "${user_config.output_format}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "fred_category",
+      "description": "Get FRED category information, child categories, related categories, series in a category, and category tags"
+    },
+    {
+      "name": "fred_release",
+      "description": "Get FRED release information, release dates, series in a release, sources, tags, and release tables"
+    },
+    {
+      "name": "fred_series",
+      "description": "Get series metadata, observations (data points), categories, release info, search series, get tags, updates, and vintage dates"
+    },
+    {
+      "name": "fred_source",
+      "description": "Get data source information and releases associated with a source"
+    },
+    {
+      "name": "fred_tag",
+      "description": "Get tag information, related tags, and series associated with tags"
+    },
+    {
+      "name": "fred_maps",
+      "description": "Get GeoFRED map shapes, series groups, and regional data for geographic visualizations"
+    },
+    {
+      "name": "fred_project_create",
+      "description": "Create a new project workspace for organizing FRED data files"
+    },
+    {
+      "name": "fred_project_list",
+      "description": "List all FRED data projects with file counts and storage metadata"
+    },
+    {
+      "name": "fred_job_status",
+      "description": "Check the status of a background job processing large FRED datasets"
+    },
+    {
+      "name": "fred_job_list",
+      "description": "List recent or active background jobs"
+    },
+    {
+      "name": "fred_job_cancel",
+      "description": "Cancel a running background job"
+    }
+  ],
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "python": ">=3.11"
+    }
+  },
+  "user_config": {
+    "fred_api_key": {
+      "type": "string",
+      "title": "FRED API Key",
+      "description": "Your Federal Reserve Economic Data (FRED) API key. Get a free API key from https://fred.stlouisfed.org/docs/api/api_key.html",
+      "sensitive": true,
+      "required": true
+    },
+    "storage_directory": {
+      "type": "directory",
+      "title": "Storage Directory",
+      "description": "Directory where FRED data files will be stored. Projects and datasets will be organized within this directory.",
+      "required": false,
+      "default": ["${HOME}/fred-data"]
+    },
+    "output_format": {
+      "type": "string",
+      "title": "Output Format",
+      "description": "Default output format for data files. Enter 'csv' or 'json'.",
+      "required": false,
+      "default": "csv"
+    }
+  }
+}
