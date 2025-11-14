@@ -2,6 +2,11 @@
 .DS_Store
 
 # ===========================
+# MCPB Extensions
+# ===========================
+*.mcpb
+
+# ===========================
 # Python
 # ===========================
 
@@ -158,6 +163,17 @@ dmypy.json
 
 # FRED data files (user's local data storage)
 fred-data/
+
+# Bundled uv binaries (downloaded during build)
+# These are platform-specific binaries that are downloaded by build-extension.sh
+# and packaged into the .mcpb extension file
+bin/darwin-arm64/
+bin/darwin-x64/
+bin/linux-x64/
+bin/win32-x64/
+# Keep the launcher scripts in git
+!bin/uv-launcher.sh
+!bin/uv-launcher.cmd
 
 # Temporary files
 *.tmp

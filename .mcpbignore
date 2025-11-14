@@ -1,0 +1,65 @@
+# Development files
+.git/
+.github/
+.vscode/
+.idea/
+.claude/
+
+# IMPORTANT: bin/ directory contains bundled uv binaries - DO NOT IGNORE
+# bin/ must be included in the extension package
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.ruff_cache/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Testing
+tests/
+.tox/
+.nox/
+
+# Documentation (use remote docs instead)
+docs/
+
+# Data storage (user-specific)
+fred-data/
+
+# Environment files
+.env
+.env.*
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# IDE
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+
+# Other
+TODO.md
+.editorconfig
