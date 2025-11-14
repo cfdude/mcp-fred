@@ -183,3 +183,13 @@ bin/win32-x64/
 
 # OS specific
 Thumbs.db
+
+# ===========================
+# Claude Code / MCP
+# ===========================
+.claude/
+.mcp.json
+.mcpbignore
+nov-13-2025-conversation.txt
+uv.lock
+coverage.json
