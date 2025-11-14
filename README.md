@@ -1,6 +1,6 @@
 # MCP-FRED
 
-**Model Context Protocol server for Federal Reserve Economic Data (FRED) API**
+Model Context Protocol server for Federal Reserve Economic Data (FRED) API
 
 A comprehensive MCP server providing access to all FRED API endpoints with intelligent large data handling, project-based storage, and async job processing for AI assistants like Claude.
 
@@ -12,13 +12,13 @@ A comprehensive MCP server providing access to all FRED API endpoints with intel
 
 ## Features
 
-- **12 MCP Tools** covering 50+ FRED API endpoints (categories, releases, series, sources, tags, maps)
-- **Conservative Token Estimation** - Automatically saves large datasets to files to prevent context overflow
-- **Project-Based Storage** - Organized file management for economic data
-- **Async Job Processing** - Background processing for large datasets (>10K observations)
-- **Multiple Transports** - STDIO (local) and Streamable HTTP (remote) support
-- **Smart Output Handling** - Auto-detect when to return data vs. save to file
-- **Type Safety** - Full Pydantic validation for all inputs and outputs
+- 12 MCP Tools covering 50+ FRED API endpoints (categories, releases, series, sources, tags, maps)
+- Conservative Token Estimation - Automatically saves large datasets to files to prevent context overflow
+- Project-Based Storage - Organized file management for economic data
+- Async Job Processing - Background processing for large datasets (>10K observations)
+- Multiple Transports - STDIO (local) and Streamable HTTP (remote) support
+- Smart Output Handling - Auto-detect when to return data vs. save to file
+- Type Safety - Full Pydantic validation for all inputs and outputs
 
 ---
 
@@ -26,12 +26,15 @@ A comprehensive MCP server providing access to all FRED API endpoints with intel
 
 ### Two Installation Options
 
-#### Option 1: Claude Desktop Extension (Recommended - One-Click)
+#### Option 1: Claude Desktop Extension (Recommended)
 
-**The easiest way to get started:**
+The easiest way to get started - no manual setup required!
 
-**Requirements:** Python 3.11+ and [uv](https://github.com/astral-sh/uv) (`brew install uv`)
+Requirements:
+- Python 3.11+
+- [uv](https://github.com/astral-sh/uv) package manager (`brew install uv`)
 
+Installation:
 1. Download `mcp-fred.mcpb` from [GitHub Releases](https://github.com/cfdude/mcp-fred/releases)
 2. Double-click the file (or run `open mcp-fred.mcpb`)
 3. Enter your FRED API key when prompted
@@ -39,33 +42,64 @@ A comprehensive MCP server providing access to all FRED API endpoints with intel
 
 See [EXTENSION.md](EXTENSION.md) for detailed instructions and troubleshooting.
 
+---
+
 #### Option 2: Manual Installation
 
-### Prerequisites
-
+Prerequisites:
 - Python 3.11 or higher
 - FRED API key (free from [fred.stlouisfed.org](https://fred.stlouisfed.org/docs/api/api_key.html))
 
-### Installation
+Installation:
 
-1. **Clone the repository:**
+1. Clone the repository:
    ```bash
    git clone https://github.com/cfdude/mcp-fred.git
    cd mcp-fred
    ```
 
-2. **Create virtual environment:**
+2. Create virtual environment:
    ```bash
    python3.11 -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. **Install dependencies:**
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-### CLI Example
+4. Configure environment:
+   ```bash
+   cp .env.example .env
+   # Edit .env and add your FRED_API_KEY
+   ```
+
+Usage with Claude Desktop:
+
+Add to your Claude Desktop configuration file:
+
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "fred": {
+      "command": "python",
+      "args": ["-m", "mcp_fred"],
+      "env": {
+        "FRED_API_KEY": "your_api_key_here",
+        "FRED_STORAGE_DIR": "/Users/username/Documents/fred-data"
+      }
+    }
+  }
+}
+```
+
+Restart Claude Desktop, and the FRED tools will be available!
+
+CLI Usage Example:
 
 Use the MCP CLI (or compatible host) to manage FRED data projects and background jobs:
 
@@ -86,38 +120,7 @@ mcp-cli call fred_job_cancel --operation cancel --job_id fred-job-123
 mcp-cli call fred_job_status --operation get --job_id fred-job-123
 ```
 
-> ℹ️ The CLI examples assume `mcp-cli` is configured with your `FRED_API_KEY` and optional
-> `FRED_STORAGE_DIR`. Substitute actual job identifiers when invoking job status tools.
-
-4. **Configure environment:**
-   ```bash
-   cp .env.example .env
-   # Edit .env and add your FRED_API_KEY
-   ```
-
-### Usage with Claude Desktop
-
-Add to your Claude Desktop configuration file:
-
-**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "fred": {
-      "command": "python",
-      "args": ["-m", "mcp_fred"],
-      "env": {
-        "FRED_API_KEY": "your_api_key_here",
-        "FRED_STORAGE_DIR": "/Users/username/Documents/fred-data"
-      }
-    }
-  }
-}
-```
-
-Restart Claude Desktop, and the FRED tools will be available!
+> Note: The CLI examples assume `mcp-cli` is configured with your `FRED_API_KEY` and optional `FRED_STORAGE_DIR`. Substitute actual job identifiers when invoking job status tools.
 
 ---
 
@@ -129,7 +132,7 @@ Restart Claude Desktop, and the FRED tools will be available!
 |------|-------------|-------------------|
 | `fred_category` | Category operations | get, children, related, series, tags |
 | `fred_release` | Release operations | get, dates, series, sources, tags, tables |
-| `fred_series` | **Series operations** | get, observations, categories, release, search, tags, updates, vintagedates |
+| `fred_series` | Series operations | get, observations, categories, release, search, tags, updates, vintagedates |
 | `fred_source` | Source operations | get, releases |
 | `fred_tag` | Tag operations | get, related, series |
 | `fred_maps` | GeoFRED maps | shapes, series data |
@@ -158,16 +161,17 @@ Restart Claude Desktop, and the FRED tools will be available!
 
 MCP-FRED intelligently decides whether to return data directly or save to a file:
 
-1. **Small datasets** (<50K tokens): Returned directly to Claude
-2. **Large datasets** (>50K tokens): Saved to file automatically
-3. **Very large datasets** (>10K observations): Processed in background job
+1. Small datasets (<50K tokens): Returned directly to Claude
+2. Large datasets (>50K tokens): Saved to file automatically
+3. Very large datasets (>10K observations): Processed in background job
 
 ### Token Estimation
 
 Conservative approach assuming 75% of context already used:
-- **Claude Sonnet**: 50K safe limit (out of 200K total)
-- **GPT-4**: 25K safe limit (out of 100K total)
-- **Gemini Pro**: 250K safe limit (out of 1M total)
+
+- Claude Sonnet: 50K safe limit (out of 200K total)
+- GPT-4: 25K safe limit (out of 100K total)
+- Gemini Pro: 250K safe limit (out of 1M total)
 
 ### Project-Based Storage
 
@@ -189,7 +193,7 @@ fred-data/
 
 ## Example Usage
 
-**In Claude Desktop, ask:**
+In Claude Desktop, ask:
 
 > "Using FRED data, get GDP observations for the last 10 years and save it to the 'economy-2024' project"
 
@@ -199,7 +203,7 @@ Claude will:
 3. Save to `fred-data/economy-2024/series/GNPCA_observations.csv`
 4. Return file path for further analysis
 
-**For large datasets:**
+For large datasets:
 
 > "Get all unemployment observations since 1948"
 
@@ -217,9 +221,11 @@ Claude will:
 All configuration via environment variables (`.env` file or MCP client config):
 
 ### Required
+
 - `FRED_API_KEY` - Your FRED API key
 
 ### Optional
+
 - `FRED_STORAGE_DIR` - Storage location (default: `./fred-data`)
 - `FRED_PROJECT_NAME` - Default project name (default: `default`)
 - `FRED_OUTPUT_FORMAT` - Default format: `csv` or `json` (default: `csv`)
@@ -281,7 +287,7 @@ ruff check --fix .
 
 - [CONTEXT.md](docs/CONTEXT.md) - Quick start for new AI contexts
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md) - System architecture and design
-- [API_MAPPING.md](docs/API_MAPPING.md) - Complete FRED API ’ Tool mapping
+- [API_MAPPING.md](docs/API_MAPPING.md) - Complete FRED API to Tool mapping
 - [SERIES_MAPS_GUIDE.md](docs/SERIES_MAPS_GUIDE.md) - Series & maps tool usage
 - [DEVELOPMENT_GUIDE.md](docs/DEVELOPMENT_GUIDE.md) - Developer setup guide
 - [DEPENDENCIES.md](docs/DEPENDENCIES.md) - Why each dependency was chosen
@@ -295,43 +301,45 @@ ruff check --fix .
 
 ```
 mcp-fred/
-   src/mcp_fred/
-      server.py           # MCP server entry point
-      config.py           # Configuration management
-      api/                # FRED API client
-         client.py       # Async HTTP client
-         endpoints/      # API endpoint implementations
-         models/         # Pydantic response models
-      tools/              # MCP tool implementations (12 tools)
-      utils/              # Utilities
-         token_estimator.py    # Token counting (tiktoken)
-         file_handler.py       # File I/O and path security
-         json_to_csv.py        # JSON to CSV conversion
-         job_manager.py        # Async job tracking
-         background_worker.py  # Background task processing
-      transports/         # STDIO and HTTP transports
-   tests/                  # Test suite (80% coverage target)
+  src/mcp_fred/
+    server.py           # MCP server entry point
+    config.py           # Configuration management
+    api/                # FRED API client
+      client.py         # Async HTTP client
+      endpoints/        # API endpoint implementations
+      models/           # Pydantic response models
+    tools/              # MCP tool implementations (12 tools)
+    utils/              # Utilities
+      token_estimator.py    # Token counting (tiktoken)
+      file_handler.py       # File I/O and path security
+      json_to_csv.py        # JSON to CSV conversion
+      job_manager.py        # Async job tracking
+      background_worker.py  # Background task processing
+    transports/         # STDIO and HTTP transports
+  tests/                # Test suite (80% coverage target)
 ```
 
 ### Key Design Decisions
 
-1. **Conservative Token Limits**: Assume 75% context used, safe limits at 25% of total
-2. **Project-Based Storage**: User-configurable directory, organized subdirectories
-3. **Async Job Processing**: Background jobs for datasets >10K rows or >10 seconds
-4. **Type Safety**: Pydantic for all validation, runtime error catching
-5. **Error Handling**: Consistent JSON error responses with codes and details
+1. Conservative Token Limits: Assume 75% context used, safe limits at 25% of total
+2. Project-Based Storage: User-configurable directory, organized subdirectories
+3. Async Job Processing: Background jobs for datasets >10K rows or >10 seconds
+4. Type Safety: Pydantic for all validation, runtime error catching
+5. Error Handling: Consistent JSON error responses with codes and details
 
 ---
 
 ## FRED API Coverage
 
-**Categories:** 50+ FRED API endpoints mapped to 12 MCP tools
+50+ FRED API endpoints mapped to 12 MCP tools
 
 ### Critical Operations (Large Data)
-- **Series Observations**: Up to 100K observations per series
-- **GeoFRED Maps**: Shape files can be 1MB+ per region
+
+- Series Observations: Up to 100K observations per series
+- GeoFRED Maps: Shape files can be 1MB+ per region
 
 ### Rate Limits
+
 - 120 requests per minute (FRED API limit)
 - Automatic retry with exponential backoff
 
@@ -339,11 +347,11 @@ mcp-fred/
 
 ## Testing Philosophy
 
-- **Target**: 80% code coverage minimum
-- **Focus**: Unit tests (primary), integration tests (as needed)
-- **Mocking**: Mock FRED API responses, no real API calls in tests
-- **No E2E**: MCP product doesn't require end-to-end testing
-- **Reference**: See [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) for scenarios, fixtures, and tooling details.
+- Target: 80% code coverage minimum
+- Focus: Unit tests (primary), integration tests (as needed)
+- Mocking: Mock FRED API responses, no real API calls in tests
+- No E2E: MCP product doesn't require end-to-end testing
+- Reference: See [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) for scenarios, fixtures, and tooling details.
 
 ---
 
@@ -367,20 +375,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- **FRED API**: Federal Reserve Bank of St. Louis for providing free economic data API
-- **Model Context Protocol**: Anthropic for the MCP specification
-- **Snowflake MCP**: Inspiration for smart output handling approach
+- FRED API: Federal Reserve Bank of St. Louis for providing free economic data API
+- Model Context Protocol: Anthropic for the MCP specification
+- Snowflake MCP: Inspiration for smart output handling approach
 
 ---
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/cfdude/mcp-fred/issues)
-- **FRED API Docs**: [fred.stlouisfed.org/docs/api](https://fred.stlouisfed.org/docs/api/fred/)
-- **MCP Specification**: [modelcontextprotocol.io](https://modelcontextprotocol.io/)
-
----
-
-**Current Status**: v0.1.0 - Phase 1 Complete (Project Setup & Infrastructure)
-
-**Next Phase**: Phase 2 - Core API Client Implementation
+- Issues: [GitHub Issues](https://github.com/cfdude/mcp-fred/issues)
+- FRED API Docs: [fred.stlouisfed.org/docs/api](https://fred.stlouisfed.org/docs/api/fred/)
+- MCP Specification: [modelcontextprotocol.io](https://modelcontextprotocol.io/)
