@@ -39,6 +39,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# PyPI publishing
+.pypirc
+
 # PyInstaller
 *.manifest
 *.spec
@@ -191,5 +194,4 @@ Thumbs.db
 .mcp.json
 .mcpbignore
 nov-13-2025-conversation.txt
-uv.lock
 coverage.json
