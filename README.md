@@ -1,8 +1,10 @@
 # MCP-FRED
 
-**Model Context Protocol server for Federal Reserve Economic Data (FRED) API**
+> **Model Context Protocol server for Federal Reserve Economic Data (FRED) API**
 
 A comprehensive MCP server providing access to all FRED API endpoints with intelligent large data handling, project-based storage, and async job processing for AI assistants like Claude.
+
+---
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
