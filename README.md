@@ -26,12 +26,15 @@ A comprehensive MCP server providing access to all FRED API endpoints with intel
 
 ### Two Installation Options
 
-#### Option 1: Claude Desktop Extension (Recommended - One-Click)
+#### Option 1: Claude Desktop Extension (Recommended)
 
-**The easiest way to get started:**
+**The easiest way to get started - no manual setup required!**
 
-**Requirements:** Python 3.11+ and [uv](https://github.com/astral-sh/uv) (`brew install uv`)
+**Requirements:**
+- Python 3.11+
+- [uv](https://github.com/astral-sh/uv) package manager (`brew install uv`)
 
+**Installation:**
 1. Download `mcp-fred.mcpb` from [GitHub Releases](https://github.com/cfdude/mcp-fred/releases)
 2. Double-click the file (or run `open mcp-fred.mcpb`)
 3. Enter your FRED API key when prompted
@@ -39,14 +42,15 @@ A comprehensive MCP server providing access to all FRED API endpoints with intel
 
 See [EXTENSION.md](EXTENSION.md) for detailed instructions and troubleshooting.
 
+---
+
 #### Option 2: Manual Installation
 
-### Prerequisites
-
+**Prerequisites:**
 - Python 3.11 or higher
 - FRED API key (free from [fred.stlouisfed.org](https://fred.stlouisfed.org/docs/api/api_key.html))
 
-### Installation
+**Installation:**
 
 1. **Clone the repository:**
    ```bash
@@ -65,37 +69,13 @@ See [EXTENSION.md](EXTENSION.md) for detailed instructions and troubleshooting.
    pip install -r requirements.txt
    ```
 
-### CLI Example
-
-Use the MCP CLI (or compatible host) to manage FRED data projects and background jobs:
-
-```bash
-# Create a new project workspace with canonical subdirectories
-mcp-cli call fred_project_create --operation create --project macro-demo
-
-# List known projects with file counts and storage metadata
-mcp-cli call fred_project_list --operation list --output screen
-
-# Review background job progress or filter for completed runs
-mcp-cli call fred_job_list --operation list --status completed --output screen
-
-# Cancel a long-running job when you no longer need the export
-mcp-cli call fred_job_cancel --operation cancel --job_id fred-job-123
-
-# Check the final status for a specific job (useful after cancellations)
-mcp-cli call fred_job_status --operation get --job_id fred-job-123
-```
-
-> ℹ️ The CLI examples assume `mcp-cli` is configured with your `FRED_API_KEY` and optional
-> `FRED_STORAGE_DIR`. Substitute actual job identifiers when invoking job status tools.
-
 4. **Configure environment:**
    ```bash
    cp .env.example .env
    # Edit .env and add your FRED_API_KEY
    ```
 
-### Usage with Claude Desktop
+**Usage with Claude Desktop:**
 
 Add to your Claude Desktop configuration file:
 
@@ -118,6 +98,30 @@ Add to your Claude Desktop configuration file:
 ```
 
 Restart Claude Desktop, and the FRED tools will be available!
+
+**CLI Usage Example:**
+
+Use the MCP CLI (or compatible host) to manage FRED data projects and background jobs:
+
+```bash
+# Create a new project workspace with canonical subdirectories
+mcp-cli call fred_project_create --operation create --project macro-demo
+
+# List known projects with file counts and storage metadata
+mcp-cli call fred_project_list --operation list --output screen
+
+# Review background job progress or filter for completed runs
+mcp-cli call fred_job_list --operation list --status completed --output screen
+
+# Cancel a long-running job when you no longer need the export
+mcp-cli call fred_job_cancel --operation cancel --job_id fred-job-123
+
+# Check the final status for a specific job (useful after cancellations)
+mcp-cli call fred_job_status --operation get --job_id fred-job-123
+```
+
+> ℹ️ The CLI examples assume `mcp-cli` is configured with your `FRED_API_KEY` and optional
+> `FRED_STORAGE_DIR`. Substitute actual job identifiers when invoking job status tools.
 
 ---
 
@@ -281,7 +285,7 @@ ruff check --fix .
 
 - [CONTEXT.md](docs/CONTEXT.md) - Quick start for new AI contexts
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md) - System architecture and design
-- [API_MAPPING.md](docs/API_MAPPING.md) - Complete FRED API ’ Tool mapping
+- [API_MAPPING.md](docs/API_MAPPING.md) - Complete FRED API to Tool mapping
 - [SERIES_MAPS_GUIDE.md](docs/SERIES_MAPS_GUIDE.md) - Series & maps tool usage
 - [DEVELOPMENT_GUIDE.md](docs/DEVELOPMENT_GUIDE.md) - Developer setup guide
 - [DEPENDENCIES.md](docs/DEPENDENCIES.md) - Why each dependency was chosen
