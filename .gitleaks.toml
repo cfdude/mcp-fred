@@ -1,0 +1,32 @@
+# Gitleaks configuration for MCP-FRED
+# https://github.com/gitleaks/gitleaks
+
+title = "MCP-FRED Secret Scanning Configuration"
+
+[extend]
+# Use default Gitleaks rules
+useDefault = true
+
+[allowlist]
+description = "Allowlist for known false positives"
+
+# Allow example/placeholder values in documentation and tests
+regexes = [
+    '''your_api_key_here''',
+    '''your-api-key''',
+    '''test_api_key''',
+    '''fake_key''',
+    '''FRED_API_KEY.*=.*\$\{.*\}''',  # Environment variable references
+    '''FRED_API_KEY.*=.*".*"''',      # Empty or example strings in configs
+]
+
+paths = [
+    '''.env.example''',
+    '''tests/.*''',
+    '''docs/.*''',
+    '''README.md''',
+    '''EXTENSION.md''',
+]
+
+# Ignore specific commits (if needed)
+# commits = ["commit-hash-here"]

@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        enable-cache: true
+
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: uv sync --all-extras --dev
+
+    - name: Check code formatting
+      run: uv run ruff format --check .
+
+    - name: Run linting
+      run: uv run ruff check .
+
+    - name: Run tests with coverage
+      run: uv run pytest --cov=mcp_fred --cov-report=xml --cov-report=term-missing
+
+    - name: Check coverage threshold
+      run: |
+        coverage_percent=$(uv run coverage report --format=total)
+        echo "Coverage: ${coverage_percent}%"
+        if (( $(echo "$coverage_percent < 80" | bc -l) )); then
+          echo "ERROR: Coverage ${coverage_percent}% is below required 80%"
+          exit 1
+        fi
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      if: matrix.python-version == '3.12'
+      with:
+        files: ./coverage.xml
+        fail_ci_if_error: false
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+  type-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        enable-cache: true
+
+    - name: Set up Python 3.12
+      run: uv python install 3.12
+
+    - name: Install dependencies
+      run: uv sync --all-extras --dev
+
+    - name: Check for syntax errors
+      run: uv run python -m py_compile $(find src tests -name "*.py")

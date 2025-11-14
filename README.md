@@ -292,6 +292,28 @@ ruff check --fix .
 - [DEVELOPMENT_GUIDE.md](docs/DEVELOPMENT_GUIDE.md) - Developer setup guide
 - [DEPENDENCIES.md](docs/DEPENDENCIES.md) - Why each dependency was chosen
 - [TODO.md](docs/TODO.md) - Development task list (8 phases)
+- [CI_CD.md](docs/CI_CD.md) - CI/CD workflows and pre-commit hooks
+
+### CI/CD
+
+Automated testing and security checks run on every commit and pull request.
+
+**Install pre-commit hook** (recommended for development):
+```bash
+./scripts/install-pre-commit-hook.sh
+```
+
+The hook runs before each commit:
+- Code formatting check (ruff)
+- Linting (ruff)
+- Full test suite (pytest)
+- Coverage validation (80% minimum)
+
+**GitHub Actions workflows:**
+- CI: Tests, formatting, linting on Python 3.11 & 3.12
+- Security: Secret scanning, dependency vulnerabilities
+
+See [CI_CD.md](docs/CI_CD.md) for complete details.
 
 ---
 
