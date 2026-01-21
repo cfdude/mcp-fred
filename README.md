@@ -6,6 +6,7 @@ A comprehensive MCP server providing access to all FRED API endpoints with intel
 
 [![PyPI version](https://img.shields.io/pypi/v/mcp-fred.svg)](https://pypi.org/project/mcp-fred/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![FastMCP 3.0.0b1](https://img.shields.io/badge/FastMCP-3.0.0b1-purple.svg)](https://gofastmcp.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
@@ -13,13 +14,15 @@ A comprehensive MCP server providing access to all FRED API endpoints with intel
 
 ## Features
 
-- 12 MCP Tools covering 50+ FRED API endpoints (categories, releases, series, sources, tags, maps)
-- Conservative Token Estimation - Automatically saves large datasets to files to prevent context overflow
-- Project-Based Storage - Organized file management for economic data
-- Async Job Processing - Background processing for large datasets (>10K observations)
-- Multiple Transports - STDIO (local) and Streamable HTTP (remote) support
-- Smart Output Handling - Auto-detect when to return data vs. save to file
-- Type Safety - Full Pydantic validation for all inputs and outputs
+- **Built on FastMCP 3.0.0b1** - Modern decorator-based MCP framework with context injection
+- **39 MCP Tools** covering 50+ FRED API endpoints (categories, releases, series, sources, tags, maps)
+- **Progressive Disclosure** - 29 core tools visible by default, 16 additional tools activated on-demand
+- **Per-Session Activation** - Enable data, advanced, or admin tool tiers as needed
+- **Conservative Token Estimation** - Automatically saves large datasets to files to prevent context overflow
+- **Project-Based Storage** - Organized file management for economic data
+- **Async Job Processing** - Background processing for large datasets (>10K observations)
+- **Smart Output Handling** - Auto-detect when to return data vs. save to file
+- **Type Safety** - Full Pydantic validation for all inputs and outputs
 
 ---
 
@@ -165,32 +168,59 @@ mcp-cli call fred_job_status --operation get --job_id fred-job-123
 
 ## Available Tools
 
-### Data Retrieval Tools
+MCP-FRED uses **progressive disclosure** to reduce context overhead. Core and discovery tools are always visible; additional tiers can be activated per-session.
 
-| Tool | Description | Example Operations |
-|------|-------------|-------------------|
-| `fred_category` | Category operations | get, children, related, series, tags |
-| `fred_release` | Release operations | get, dates, series, sources, tags, tables |
-| `fred_series` | Series operations | get, observations, categories, release, search, tags, updates, vintagedates |
-| `fred_source` | Source operations | get, releases |
-| `fred_tag` | Tag operations | get, related, series |
-| `fred_maps` | GeoFRED maps | shapes, series data |
+### Tool Tiers
 
-### Job Management Tools
+| Tier | Tools | Status | Activation |
+|------|-------|--------|------------|
+| **Core** | 8 tools | Always visible | - |
+| **Discovery** | 15 tools | Always visible | - |
+| **Data** | 7 tools | Hidden by default | `activate_data_tools()` |
+| **Advanced** | 6 tools | Hidden by default | `activate_advanced_tools()` |
+| **Admin** | 4 tools | Hidden by default | `activate_admin_tools()` |
+
+Use `activate_all_tools()` to enable all tiers at once, or `list_tool_tiers()` to see available tools.
+
+### Core Tools (Always Available)
+
+| Tool | Description |
+|------|-------------|
+| `fred_category_get` | Get category details |
+| `fred_category_children` | List child categories |
+| `fred_series_get` | Get series metadata |
+| `fred_release_get` | Get release details |
+| `fred_source_get` | Get source details |
+
+### Discovery Tools (Always Available)
+
+| Tool | Description |
+|------|-------------|
+| `fred_series_search` | Search for series by keywords |
+| `fred_tag_list` | List FRED tags |
+| `fred_tag_series` | Get series by tags |
+| `fred_release_list` | List all releases |
+| `fred_source_list` | List all sources |
+| `fred_category_series` | List series in category |
+
+### Data Tools (Activate with `activate_data_tools()`)
+
+| Tool | Description |
+|------|-------------|
+| `fred_series_observations` | Get time series data points |
+| `fred_release_dates` | Get release date schedules |
+| `fred_maps_shapes` | Get geographic shape data |
+| `fred_maps_regional_data` | Get regional economic data |
+
+### Admin Tools (Activate with `activate_admin_tools()`)
 
 | Tool | Description |
 |------|-------------|
 | `fred_job_status` | Check status of background jobs |
 | `fred_job_list` | List recent/active jobs |
 | `fred_job_cancel` | Cancel running job |
-
-### Project Management Tools
-
-| Tool | Description |
-|------|-------------|
 | `fred_project_list` | List all projects in storage |
 | `fred_project_create` | Create new project directory |
-| `fred_project_files` | List files in a project |
 
 ---
 
@@ -358,35 +388,57 @@ See [CI_CD.md](docs/CI_CD.md) for complete details.
 
 ## Architecture
 
+### Built on FastMCP 3.0.0b1
+
+MCP-FRED is built on [FastMCP 3.0.0b1](https://gofastmcp.com), the modern Python framework for building MCP servers. Key framework features used:
+
+- **Decorator-based tool registration** - `@mcp.tool()` decorators for clean tool definitions
+- **Context injection** - `CurrentContext()` dependency provides access to shared resources
+- **Lifespan management** - `@lifespan` decorator handles initialization and cleanup
+- **Tag-based visibility** - `mcp.disable(tags={...})` and `ctx.enable_components()` for progressive disclosure
+- **Tool annotations** - `readOnlyHint`, `idempotentHint` for LLM optimization
+
 ### Core Components
 
 ```
 mcp-fred/
   src/mcp_fred/
-    server.py           # MCP server entry point
+    fastmcp_server.py   # FastMCP entry point with progressive disclosure
     config.py           # Configuration management
+    servers/            # FastMCP tool modules (39 tools)
+      base.py           # Server instance and lifespan context
+      admin.py          # Job/project management + activation tools
+      categories.py     # Category tools
+      releases.py       # Release tools
+      series.py         # Series tools (largest module)
+      sources.py        # Source tools
+      tags.py           # Tag tools
+      maps.py           # GeoFRED tools
+      common.py         # Shared utilities (smart_output, error formatting)
     api/                # FRED API client
-      client.py         # Async HTTP client
+      client.py         # Async HTTP client with retry/backoff
       endpoints/        # API endpoint implementations
       models/           # Pydantic response models
-    tools/              # MCP tool implementations (12 tools)
     utils/              # Utilities
       token_estimator.py    # Token counting (tiktoken)
-      file_handler.py       # File I/O and path security
+      output_handler.py     # Smart output routing
       json_to_csv.py        # JSON to CSV conversion
       job_manager.py        # Async job tracking
       background_worker.py  # Background task processing
-    transports/         # STDIO and HTTP transports
+    tools/              # Legacy tool implementations (for MCPFRED_LEGACY=1)
+    transports/         # Legacy STDIO transport
   tests/                # Test suite (80% coverage target)
 ```
 
 ### Key Design Decisions
 
-1. Conservative Token Limits: Assume 75% context used, safe limits at 25% of total
-2. Project-Based Storage: User-configurable directory, organized subdirectories
-3. Async Job Processing: Background jobs for datasets >10K rows or >10 seconds
-4. Type Safety: Pydantic for all validation, runtime error catching
-5. Error Handling: Consistent JSON error responses with codes and details
+1. **FastMCP 3.0.0b1** - Modern framework with decorator-based tools and context injection
+2. **Progressive Disclosure** - 29 tools visible by default, 16 activated on-demand to reduce LLM context overhead
+3. **Conservative Token Limits** - Assume 75% context used, safe limits at 25% of total
+4. **Project-Based Storage** - User-configurable directory, organized subdirectories
+5. **Async Job Processing** - Background jobs for datasets >10K rows or >10 seconds
+6. **Type Safety** - Pydantic for all validation, runtime error catching
+7. **Legacy Support** - Set `MCPFRED_LEGACY=1` to use old STDIO transport
 
 ---
 

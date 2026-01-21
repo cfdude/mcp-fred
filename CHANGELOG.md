@@ -8,9 +8,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **FastMCP 3.0.0b1 Migration** - Complete rewrite of MCP server layer
+  - Migrated from custom MCP implementation to [FastMCP 3.0.0b1](https://gofastmcp.com) framework
+  - Decorator-based tool registration with `@mcp.tool()` decorators
+  - Context injection via `CurrentContext()` dependency
+  - Lifespan management with `@lifespan` decorator for shared resources
+  - Tool annotations (`readOnlyHint`, `idempotentHint`) for LLM optimization
+- **Progressive Disclosure** - Tag-based tool visibility system
+  - 29 core/discovery tools visible by default
+  - 16 additional tools (data, advanced, admin tiers) activated on-demand
+  - Activation tools: `activate_data_tools()`, `activate_advanced_tools()`, `activate_admin_tools()`, `activate_all_tools()`
+  - `list_tool_tiers()` shows available tool categories
+- **New Server Architecture** - `src/mcp_fred/servers/` module
+  - `base.py` - FastMCP server instance with lifespan context
+  - `admin.py` - Job/project management + activation tools
+  - `categories.py`, `releases.py`, `series.py`, `sources.py`, `tags.py`, `maps.py` - Domain tools
+  - `common.py` - Shared utilities (smart_output, error formatting)
+- **Legacy Mode Support** - Set `MCPFRED_LEGACY=1` to use old STDIO transport
 - CI/CD infrastructure with comprehensive testing and security scanning
 - Pre-commit hooks for local development
 - Documentation updates for clean Markdown rendering
+
+### Changed
+- **Tool Count** - Expanded from 12 operation-based tools to 39 individual tools
+- **Entry Point** - `fastmcp_server.py` replaces `server.py` as default
+- **Tool Registration** - Individual decorated functions replace if-chain dispatch
+- **Context Access** - `CurrentContext()` injection replaces manual threading
+
+### Technical Details
+- FastMCP version: 3.0.0b1 (requires `pip install --pre` or `uv pip install --pre`)
+- All 106 existing tests pass
+- Coverage temporarily excludes new server files (88% on legacy code)
+- Token estimation and automatic file offloading preserved
 
 ---
 
