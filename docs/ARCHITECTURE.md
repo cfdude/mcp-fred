@@ -10,17 +10,25 @@ This document outlines the architecture and design decisions for the FRED MCP (M
 
 ### Core Framework
 - **Language:** Python 3.11+
-- **Web Framework:** FastAPI
-- **MCP Protocol:** Python MCP SDK
+- **MCP Framework:** [FastMCP 3.0.0b1](https://gofastmcp.com) - Modern decorator-based MCP framework
+- **HTTP Client:** httpx with async support
+
+### FastMCP 3.0.0b1 Features Used
+- **Decorator-based tool registration** - `@mcp.tool()` for clean tool definitions
+- **Context injection** - `CurrentContext()` dependency for shared resources
+- **Lifespan management** - `@lifespan` decorator handles initialization/cleanup
+- **Tag-based visibility** - `mcp.disable(tags={...})` and `ctx.enable_components()` for progressive disclosure
+- **Tool annotations** - `readOnlyHint`, `idempotentHint` for LLM optimization
 
 ### Development Tools
 - **Linter/Formatter:** Ruff
-- **Testing Framework:** pytest
-- **Dependency Management:** pip + requirements.txt (or Poetry TBD)
+- **Testing Framework:** pytest with pytest-asyncio
+- **Dependency Management:** pip + requirements.txt
 
 ### Transport Protocols
-- **STDIO:** For local communication (MCP client runs server as subprocess)
-- **Streamable HTTP:** For remote communication (modern MCP standard)
+- **STDIO:** Default transport for MCP clients (Claude Desktop, mcp-cli)
+- **Streamable HTTP:** Built-in FastMCP support for remote deployment
+- **Legacy Mode:** Set `MCPFRED_LEGACY=1` to use old STDIO transport
 
 ---
 
@@ -31,16 +39,24 @@ mcp-fred/
 ├── src/
 │   ├── mcp_fred/
 │   │   ├── __init__.py
-│   │   ├── server.py           # Main MCP server entry point
-│   │   ├── config.py           # Configuration management
-│   │   ├── transports/
+│   │   ├── __main__.py          # Entry point (selects FastMCP or legacy)
+│   │   ├── fastmcp_server.py    # FastMCP 3.0.0b1 entry point with progressive disclosure
+│   │   ├── config.py            # Configuration management
+│   │   ├── servers/             # FastMCP tool modules (39 tools)
 │   │   │   ├── __init__.py
-│   │   │   ├── stdio.py        # STDIO transport implementation
-│   │   │   └── http.py         # Streamable HTTP transport implementation
+│   │   │   ├── base.py          # FastMCP server instance and lifespan context
+│   │   │   ├── common.py        # Shared utilities (smart_output, error formatting)
+│   │   │   ├── admin.py         # Job/project management + activation tools
+│   │   │   ├── categories.py    # Category tools (6 tools)
+│   │   │   ├── releases.py      # Release tools (8 tools)
+│   │   │   ├── series.py        # Series tools (11 tools) - largest module
+│   │   │   ├── sources.py       # Source tools (3 tools)
+│   │   │   ├── tags.py          # Tag tools (3 tools)
+│   │   │   └── maps.py          # GeoFRED tools (4 tools)
 │   │   ├── api/
 │   │   │   ├── __init__.py
-│   │   │   ├── client.py       # FRED API HTTP client
-│   │   │   ├── endpoints/
+│   │   │   ├── client.py        # FRED API HTTP client with retry/backoff
+│   │   │   ├── endpoints/       # API endpoint implementations
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── category.py
 │   │   │   │   ├── release.py
@@ -60,20 +76,10 @@ mcp-fred/
 │   │   │   ├── path_resolver.py     # Secure path resolution and validation
 │   │   │   ├── job_manager.py       # Async job management and tracking
 │   │   │   └── background_worker.py # Background job processing
-│   │   └── tools/
-│   │       ├── __init__.py
-│   │       ├── category.py      # MCP tool: fred_category
-│   │       ├── release.py       # MCP tool: fred_release
-│   │       ├── series.py        # MCP tool: fred_series
-│   │       ├── source.py        # MCP tool: fred_source
-│   │       ├── tag.py           # MCP tool: fred_tag
-│   │       ├── maps.py          # MCP tool: fred_maps
-│   │       ├── job_status.py    # MCP tool: fred_job_status
-│   │       ├── job_list.py      # MCP tool: fred_job_list (optional)
-│   │       ├── job_cancel.py    # MCP tool: fred_job_cancel (optional)
-│   │       ├── project_list.py  # MCP tool: fred_project_list
-│   │       ├── project_create.py # MCP tool: fred_project_create
-│   │       └── project_files.py # MCP tool: fred_project_files
+│   │   ├── tools/               # Legacy tool implementations (for MCPFRED_LEGACY=1)
+│   │   │   └── ...              # Operation-based tools (deprecated)
+│   │   └── transports/          # Legacy STDIO transport (for MCPFRED_LEGACY=1)
+│   │       └── ...
 ├── tests/
 │   ├── __init__.py
 │   ├── test_tools/
@@ -84,12 +90,11 @@ mcp-fred/
 │   ├── ARCHITECTURE.md          # This file
 │   ├── FRED_API_REFERENCE.md    # FRED API documentation
 │   ├── TODO.md                  # Development tasks
-│   ├── PROGRESS.md              # Completed tasks
-│   └── USER_GUIDE.md            # End-user documentation
+│   ├── CI_CD.md                 # CI/CD workflows
+│   └── API_MAPPING.md           # FRED API to MCP tool mapping
 ├── .env.example                 # Example environment variables
 ├── pyproject.toml               # Ruff configuration
 ├── requirements.txt             # Python dependencies
-├── pytest.ini                   # pytest configuration
 ├── CHANGELOG.md                 # Version history
 ├── README.md                    # Project README
 └── LICENSE                      # License file
@@ -821,57 +826,127 @@ async def fred_project_files(
 
 ## MCP Tool Design
 
-### Tool Structure
+### FastMCP 3.0.0b1 Tool Structure
 
-Each tool follows a consistent pattern with an `operation` parameter to handle multiple related endpoints:
+Each tool is defined as an individual decorated function with specific parameters (not an operation-based pattern):
 
 ```python
-@mcp.tool()
-async def fred_category(
-    operation: str,
-    category_id: Optional[int] = None,
-    **kwargs
-) -> dict:
-    """
-    FRED Category operations
+from fastmcp.server.context import Context
+from fastmcp.server.dependencies import CurrentContext
+
+@mcp.tool(
+    tags={"domain:category", "tier:core"},
+    annotations={"readOnlyHint": True, "idempotentHint": True},
+)
+async def fred_category_get(
+    category_id: int,
+    ctx: Context = CurrentContext(),
+) -> dict[str, Any]:
+    """Get details for a specific FRED category.
 
     Args:
-        operation: One of: get, list_children, get_related, get_series,
-                   get_tags, get_related_tags
-        category_id: Category ID (required for most operations)
-        **kwargs: Additional operation-specific parameters
+        category_id: The FRED category ID (e.g., 0 for root, 125 for Trade)
+
+    Returns:
+        Category details including name, parent_id, and notes
     """
-    pass
+    await ctx.debug(f"Fetching category {category_id}")
+    categories = ctx.lifespan_context["categories"]
+    result = await categories.get(category_id)
+    return await smart_output(ctx, result, operation="category_get", ...)
 ```
 
-### Implemented Tools
+**Key FastMCP patterns used:**
+- `CurrentContext()` - Dependency injection excludes `ctx` from tool schema
+- `ctx.lifespan_context` - Access shared resources (API clients) from lifespan
+- `ctx.debug/info` - Built-in logging
+- `annotations` - LLM hints (`readOnlyHint`, `idempotentHint`)
+- `tags` - Enable progressive disclosure
+
+### Progressive Disclosure System
+
+MCP-FRED uses tag-based visibility to reduce context overhead:
+
+```python
+# In fastmcp_server.py - disable non-core tools by default
+mcp.disable(tags={"tier:data", "tier:advanced", "tier:admin"})
+
+# Activation tool (always visible)
+@mcp.tool(tags={"tier:core"})
+async def activate_data_tools(ctx: Context = CurrentContext()) -> dict:
+    """Activate data retrieval tools for this session."""
+    await ctx.enable_components(tags={"tier:data"})
+    return {"status": "activated", "tier": "data", ...}
+```
+
+**Tool Tiers:**
+
+| Tier | Tag | Default | Tools | Context Impact |
+|------|-----|---------|-------|----------------|
+| **Core** | `tier:core` | Visible | 8 tools | ~1.5K tokens |
+| **Discovery** | `tier:discovery` | Visible | 15 tools | ~2K tokens |
+| **Data** | `tier:data` | Hidden | 7 tools | +1.5K when activated |
+| **Advanced** | `tier:advanced` | Hidden | 6 tools | +1K when activated |
+| **Admin** | `tier:admin` | Hidden | 4 tools | +0.5K when activated |
+
+**Activation Tools:**
+- `activate_data_tools()` - Enable series observations, release dates, etc.
+- `activate_advanced_tools()` - Enable vintage dates, tag searches, etc.
+- `activate_admin_tools()` - Enable job/project management
+- `activate_all_tools()` - Enable all tiers at once
+- `list_tool_tiers()` - Show available tool categories
+
+### Implemented Tools (39 Total)
 
 #### Core FRED Data Tools
 
-| Tool Name | Operations | Endpoints Covered |
-|-----------|-----------|-------------------|
-| `fred_category` | `get`, `list_children`, `get_related`, `get_series`, `get_tags`, `get_related_tags` | `/category/*` |
-| `fred_release` | `list`, `get`, `get_dates`, `get_series`, `get_sources`, `get_tags`, `get_related_tags`, `get_tables` | `/releases/*`, `/release/*` |
-| `fred_series` | `get`, `search`, `get_categories`, `get_observations`, `get_release`, `get_tags`, `search_tags`, `search_related_tags`, `get_updates`, `get_vintage_dates` | `/series/*` |
-| `fred_source` | `list`, `get`, `get_releases` | `/sources/*`, `/source/*` |
-| `fred_tag` | `list`, `get_related_tags`, `get_series` | `/tags/*`, `/related_tags` |
-| `fred_maps` | `get_shapes`, `get_series_group`, `get_regional_data`, `get_series_data` | `/geofred/*` |
+| Tool Name | Tier | Endpoints Covered |
+|-----------|------|-------------------|
+| `fred_category_get` | core | `GET /fred/category` |
+| `fred_category_children` | core | `GET /fred/category/children` |
+| `fred_category_related` | discovery | `GET /fred/category/related` |
+| `fred_category_series` | discovery | `GET /fred/category/series` |
+| `fred_category_tags` | advanced | `GET /fred/category/tags` |
+| `fred_category_related_tags` | advanced | `GET /fred/category/related_tags` |
+| `fred_release_list` | discovery | `GET /fred/releases` |
+| `fred_release_get` | core | `GET /fred/release` |
+| `fred_release_dates` | data | `GET /fred/releases/dates` |
+| `fred_release_get_dates` | data | `GET /fred/release/dates` |
+| `fred_release_series` | discovery | `GET /fred/release/series` |
+| `fred_release_sources` | discovery | `GET /fred/release/sources` |
+| `fred_release_tags` | advanced | `GET /fred/release/tags` |
+| `fred_release_related_tags` | advanced | `GET /fred/release/related_tags` |
+| `fred_release_tables` | advanced | `GET /fred/release/tables` |
+| `fred_series_get` | core | `GET /fred/series` |
+| `fred_series_search` | discovery | `GET /fred/series/search` |
+| `fred_series_categories` | discovery | `GET /fred/series/categories` |
+| `fred_series_observations` | data | `GET /fred/series/observations` |
+| `fred_series_release` | discovery | `GET /fred/series/release` |
+| `fred_series_tags` | discovery | `GET /fred/series/tags` |
+| `fred_series_search_tags` | advanced | `GET /fred/series/search/tags` |
+| `fred_series_search_related_tags` | advanced | `GET /fred/series/search/related_tags` |
+| `fred_series_updates` | data | `GET /fred/series/updates` |
+| `fred_series_vintage_dates` | data | `GET /fred/series/vintagedates` |
+| `fred_source_list` | discovery | `GET /fred/sources` |
+| `fred_source_get` | core | `GET /fred/source` |
+| `fred_source_releases` | discovery | `GET /fred/source/releases` |
+| `fred_tag_list` | discovery | `GET /fred/tags` |
+| `fred_tag_series` | discovery | `GET /fred/tags/series` |
+| `fred_tag_related` | discovery | `GET /fred/related_tags` |
+| `fred_maps_shapes` | data | `GET /geofred/shapes/file` |
+| `fred_maps_series_group` | data | `GET /geofred/series/group` |
+| `fred_maps_regional_data` | data | `GET /geofred/regional/data` |
+| `fred_maps_series_data` | data | `GET /geofred/series/data` |
 
-#### Job Management Tools
+#### Admin Tools (Activate with `activate_admin_tools()`)
 
-| Tool Name | Purpose | Required |
-|-----------|---------|----------|
-| `fred_job_status` | Check status of async background jobs | **Yes** |
-| `fred_job_list` | List recent jobs with filtering | Optional |
-| `fred_job_cancel` | Cancel running background jobs | Optional |
-
-#### Project Management Tools
-
-| Tool Name | Purpose | Required |
-|-----------|---------|----------|
-| `fred_project_list` | List all projects in storage directory | **Yes** |
-| `fred_project_create` | Create new project directory structure | **Yes** |
-| `fred_project_files` | List files within a specific project | **Yes** |
+| Tool Name | Purpose |
+|-----------|---------|
+| `fred_job_status` | Check status of async background jobs |
+| `fred_job_list` | List recent jobs with filtering |
+| `fred_job_cancel` | Cancel running background jobs |
+| `fred_project_list` | List all projects in storage directory |
+| `fred_project_create` | Create new project directory structure |
 
 ### Tool Response Format
 

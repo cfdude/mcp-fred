@@ -2,68 +2,61 @@
 
 **Complete Reference: FRED API Endpoints → MCP Tools → Implementation Files**
 
-This document provides a comprehensive mapping between FRED API endpoints, MCP tool operations, and where they will be implemented in the codebase.
+This document provides a comprehensive mapping between FRED API endpoints and MCP tools built on **FastMCP 3.0.0b1**.
+
+> **Note:** As of the FastMCP 3.0.0b1 migration, each FRED API endpoint maps to an individual MCP tool (not operation-based dispatch). Tools are organized by tier for progressive disclosure.
 
 ---
 
 ## Quick Navigation
 
-- [Category Endpoints](#category-endpoints) → `fred_category` tool
-- [Release Endpoints](#release-endpoints) → `fred_release` tool
-- [Series Endpoints](#series-endpoints) → `fred_series` tool (CRITICAL: Large Data)
-- [Source Endpoints](#source-endpoints) → `fred_source` tool
-- [Tag Endpoints](#tag-endpoints) → `fred_tag` tool
-- [Maps Endpoints](#maps-endpoints) → `fred_maps` tool (CRITICAL: Large Data)
+- [Category Endpoints](#category-endpoints) → `fred_category_*` tools
+- [Release Endpoints](#release-endpoints) → `fred_release_*` tools
+- [Series Endpoints](#series-endpoints) → `fred_series_*` tools (CRITICAL: Large Data)
+- [Source Endpoints](#source-endpoints) → `fred_source_*` tools
+- [Tag Endpoints](#tag-endpoints) → `fred_tag_*` tools
+- [Maps Endpoints](#maps-endpoints) → `fred_maps_*` tools (CRITICAL: Large Data)
 
 ---
 
 ## Category Endpoints
 
-**MCP Tool:** `fred_category`
-**Implementation File:** `src/mcp_fred/tools/category.py`
+**MCP Tools:** `fred_category_*` (6 tools)
+**Implementation File:** `src/mcp_fred/servers/categories.py`
 **API Client File:** `src/mcp_fred/api/endpoints/category.py`
 
-| FRED API Endpoint | MCP Operation | Tool Call Example | API Client Method | Notes |
-|-------------------|---------------|-------------------|-------------------|-------|
-| `GET /fred/category` | `get` | `fred_category(operation="get", category_id=125)` | `get_category(category_id)` | Get category metadata |
-| `GET /fred/category/children` | `list_children` | `fred_category(operation="list_children", category_id=125)` | `get_category_children(category_id)` | Get child categories |
-| `GET /fred/category/related` | `get_related` | `fred_category(operation="get_related", category_id=125)` | `get_category_related(category_id)` | Get related categories |
-| `GET /fred/category/series` | `get_series` | `fred_category(operation="get_series", category_id=125)` | `get_category_series(category_id)` | List series in category |
-| `GET /fred/category/tags` | `get_tags` | `fred_category(operation="get_tags", category_id=125)` | `get_category_tags(category_id)` | Get category tags |
-| `GET /fred/category/related_tags` | `get_related_tags` | `fred_category(operation="get_related_tags", category_id=125, tag_names="gdp")` | `get_category_related_tags(category_id, tag_names)` | Get related tags |
+| FRED API Endpoint | MCP Tool | Tier | Tool Call Example | Notes |
+|-------------------|----------|------|-------------------|-------|
+| `GET /fred/category` | `fred_category_get` | core | `fred_category_get(category_id=125)` | Get category metadata |
+| `GET /fred/category/children` | `fred_category_children` | core | `fred_category_children(category_id=125)` | Get child categories |
+| `GET /fred/category/related` | `fred_category_related` | discovery | `fred_category_related(category_id=125)` | Get related categories |
+| `GET /fred/category/series` | `fred_category_series` | discovery | `fred_category_series(category_id=125, limit=100)` | List series in category |
+| `GET /fred/category/tags` | `fred_category_tags` | advanced | `fred_category_tags(category_id=125)` | Get category tags |
+| `GET /fred/category/related_tags` | `fred_category_related_tags` | advanced | `fred_category_related_tags(category_id=125, tag_names="gdp")` | Get related tags |
 
 **Architecture Reference:** [ARCHITECTURE.md → MCP Tool Design](ARCHITECTURE.md#mcp-tool-design)
-**TODO Reference:** [TODO.md → Phase 4 → Category Tool](TODO.md#category-tool)
 
 ---
 
 ## Release Endpoints
 
-**MCP Tool:** `fred_release`
-**Implementation File:** `src/mcp_fred/tools/release.py`
+**MCP Tools:** `fred_release_*` (9 tools)
+**Implementation File:** `src/mcp_fred/servers/releases.py`
 **API Client File:** `src/mcp_fred/api/endpoints/release.py`
 
-### Plural Endpoints (All Releases)
-
-| FRED API Endpoint | MCP Operation | Tool Call Example | API Client Method | Notes |
-|-------------------|---------------|-------------------|-------------------|-------|
-| `GET /fred/releases` | `list` | `fred_release(operation="list")` | `get_releases()` | Get all releases |
-| `GET /fred/releases/dates` | `get_dates` | `fred_release(operation="get_dates")` | `get_releases_dates()` | All release dates |
-
-### Singular Endpoints (Specific Release)
-
-| FRED API Endpoint | MCP Operation | Tool Call Example | API Client Method | Notes |
-|-------------------|---------------|-------------------|-------------------|-------|
-| `GET /fred/release` | `get` | `fred_release(operation="get", release_id=53)` | `get_release(release_id)` | Get release metadata |
-| `GET /fred/release/dates` | `get_release_dates` | `fred_release(operation="get_release_dates", release_id=53)` | `get_release_dates(release_id)` | Release dates for specific release |
-| `GET /fred/release/series` | `get_series` | `fred_release(operation="get_series", release_id=53)` | `get_release_series(release_id)` | Series in release |
-| `GET /fred/release/sources` | `get_sources` | `fred_release(operation="get_sources", release_id=53)` | `get_release_sources(release_id)` | Sources for release |
-| `GET /fred/release/tags` | `get_tags` | `fred_release(operation="get_tags", release_id=53)` | `get_release_tags(release_id)` | Tags for release |
-| `GET /fred/release/related_tags` | `get_related_tags` | `fred_release(operation="get_related_tags", release_id=53, tag_names="gdp")` | `get_release_related_tags(release_id, tag_names)` | Related tags |
-| `GET /fred/release/tables` | `get_tables` | `fred_release(operation="get_tables", release_id=53)` | `get_release_tables(release_id)` | Release tables |
+| FRED API Endpoint | MCP Tool | Tier | Tool Call Example | Notes |
+|-------------------|----------|------|-------------------|-------|
+| `GET /fred/releases` | `fred_release_list` | discovery | `fred_release_list(limit=100)` | Get all releases |
+| `GET /fred/releases/dates` | `fred_release_dates` | data | `fred_release_dates(limit=100)` | All release dates |
+| `GET /fred/release` | `fred_release_get` | core | `fred_release_get(release_id=53)` | Get release metadata |
+| `GET /fred/release/dates` | `fred_release_get_dates` | data | `fred_release_get_dates(release_id=53)` | Release dates for specific release |
+| `GET /fred/release/series` | `fred_release_series` | discovery | `fred_release_series(release_id=53)` | Series in release |
+| `GET /fred/release/sources` | `fred_release_sources` | discovery | `fred_release_sources(release_id=53)` | Sources for release |
+| `GET /fred/release/tags` | `fred_release_tags` | advanced | `fred_release_tags(release_id=53)` | Tags for release |
+| `GET /fred/release/related_tags` | `fred_release_related_tags` | advanced | `fred_release_related_tags(release_id=53, tag_names="gdp")` | Related tags |
+| `GET /fred/release/tables` | `fred_release_tables` | advanced | `fred_release_tables(release_id=53)` | Release tables |
 
 **Architecture Reference:** [ARCHITECTURE.md → MCP Tool Design](ARCHITECTURE.md#mcp-tool-design)
-**TODO Reference:** [TODO.md → Phase 4 → Release Tool](TODO.md#release-tool)
 
 ---
 
@@ -71,22 +64,22 @@ This document provides a comprehensive mapping between FRED API endpoints, MCP t
 
 **⚠️ CRITICAL: Large Data Handling Required**
 
-**MCP Tool:** `fred_series`
-**Implementation File:** `src/mcp_fred/tools/series.py`
+**MCP Tools:** `fred_series_*` (10 tools)
+**Implementation File:** `src/mcp_fred/servers/series.py`
 **API Client File:** `src/mcp_fred/api/endpoints/series.py`
 
-| FRED API Endpoint | MCP Operation | Tool Call Example | API Client Method | Large Data Risk | Notes |
-|-------------------|---------------|-------------------|-------------------|-----------------|-------|
-| `GET /fred/series` | `get` | `fred_series(operation="get", series_id="GNPCA")` | `get_series(series_id)` | Low | Series metadata only |
-| `GET /fred/series/search` | `search` | `fred_series(operation="search", search_text="gdp")` | `search_series(search_text)` | Medium | Can return many results |
-| `GET /fred/series/categories` | `get_categories` | `fred_series(operation="get_categories", series_id="GNPCA")` | `get_series_categories(series_id)` | Low | Categories for series |
-| `GET /fred/series/observations` | `get_observations` | `fred_series(operation="get_observations", series_id="GNPCA")` | `get_series_observations(series_id)` | **CRITICAL** | **Up to 100K observations** |
-| `GET /fred/series/release` | `get_release` | `fred_series(operation="get_release", series_id="GNPCA")` | `get_series_release(series_id)` | Low | Release for series |
-| `GET /fred/series/tags` | `get_tags` | `fred_series(operation="get_tags", series_id="GNPCA")` | `get_series_tags(series_id)` | Low | Tags for series |
-| `GET /fred/series/search/tags` | `search_tags` | `fred_series(operation="search_tags", series_search_text="gdp")` | `search_series_tags(series_search_text)` | Low | Search for tags |
-| `GET /fred/series/search/related_tags` | `search_related_tags` | `fred_series(operation="search_related_tags", series_search_text="gdp")` | `search_series_related_tags(series_search_text)` | Low | Related tags search |
-| `GET /fred/series/updates` | `get_updates` | `fred_series(operation="get_updates")` | `get_series_updates()` | Medium | Recently updated series |
-| `GET /fred/series/vintagedates` | `get_vintage_dates` | `fred_series(operation="get_vintage_dates", series_id="GNPCA")` | `get_series_vintage_dates(series_id)` | Low | Vintage dates |
+| FRED API Endpoint | MCP Tool | Tier | Tool Call Example | Large Data Risk | Notes |
+|-------------------|----------|------|-------------------|-----------------|-------|
+| `GET /fred/series` | `fred_series_get` | core | `fred_series_get(series_id="GNPCA")` | Low | Series metadata only |
+| `GET /fred/series/search` | `fred_series_search` | discovery | `fred_series_search(search_text="gdp", limit=100)` | Medium | Can return many results |
+| `GET /fred/series/categories` | `fred_series_categories` | discovery | `fred_series_categories(series_id="GNPCA")` | Low | Categories for series |
+| `GET /fred/series/observations` | `fred_series_observations` | data | `fred_series_observations(series_id="GNPCA")` | **CRITICAL** | **Up to 100K observations** |
+| `GET /fred/series/release` | `fred_series_release` | discovery | `fred_series_release(series_id="GNPCA")` | Low | Release for series |
+| `GET /fred/series/tags` | `fred_series_tags` | discovery | `fred_series_tags(series_id="GNPCA")` | Low | Tags for series |
+| `GET /fred/series/search/tags` | `fred_series_search_tags` | advanced | `fred_series_search_tags(series_search_text="gdp")` | Low | Search for tags |
+| `GET /fred/series/search/related_tags` | `fred_series_search_related_tags` | advanced | `fred_series_search_related_tags(series_search_text="gdp")` | Low | Related tags search |
+| `GET /fred/series/updates` | `fred_series_updates` | data | `fred_series_updates(limit=100)` | Medium | Recently updated series |
+| `GET /fred/series/vintagedates` | `fred_series_vintage_dates` | data | `fred_series_vintage_dates(series_id="GNPCA")` | Low | Vintage dates |
 
 ### Critical Implementation Requirements
 
@@ -120,42 +113,33 @@ This document provides a comprehensive mapping between FRED API endpoints, MCP t
 
 ## Source Endpoints
 
-**MCP Tool:** `fred_source`
-**Implementation File:** `src/mcp_fred/tools/source.py`
+**MCP Tools:** `fred_source_*` (3 tools)
+**Implementation File:** `src/mcp_fred/servers/sources.py`
 **API Client File:** `src/mcp_fred/api/endpoints/source.py`
 
-### Plural Endpoints (All Sources)
-
-| FRED API Endpoint | MCP Operation | Tool Call Example | API Client Method | Notes |
-|-------------------|---------------|-------------------|-------------------|-------|
-| `GET /fred/sources` | `list` | `fred_source(operation="list")` | `get_sources()` | Get all sources |
-
-### Singular Endpoints (Specific Source)
-
-| FRED API Endpoint | MCP Operation | Tool Call Example | API Client Method | Notes |
-|-------------------|---------------|-------------------|-------------------|-------|
-| `GET /fred/source` | `get` | `fred_source(operation="get", source_id=1)` | `get_source(source_id)` | Get source metadata |
-| `GET /fred/source/releases` | `get_releases` | `fred_source(operation="get_releases", source_id=1)` | `get_source_releases(source_id)` | Releases from source |
+| FRED API Endpoint | MCP Tool | Tier | Tool Call Example | Notes |
+|-------------------|----------|------|-------------------|-------|
+| `GET /fred/sources` | `fred_source_list` | discovery | `fred_source_list(limit=100)` | Get all sources |
+| `GET /fred/source` | `fred_source_get` | core | `fred_source_get(source_id=1)` | Get source metadata |
+| `GET /fred/source/releases` | `fred_source_releases` | discovery | `fred_source_releases(source_id=1)` | Releases from source |
 
 **Architecture Reference:** [ARCHITECTURE.md → MCP Tool Design](ARCHITECTURE.md#mcp-tool-design)
-**TODO Reference:** [TODO.md → Phase 4 → Source Tool](TODO.md#source-tool)
 
 ---
 
 ## Tag Endpoints
 
-**MCP Tool:** `fred_tag`
-**Implementation File:** `src/mcp_fred/tools/tag.py`
+**MCP Tools:** `fred_tag_*` (3 tools)
+**Implementation File:** `src/mcp_fred/servers/tags.py`
 **API Client File:** `src/mcp_fred/api/endpoints/tag.py`
 
-| FRED API Endpoint | MCP Operation | Tool Call Example | API Client Method | Notes |
-|-------------------|---------------|-------------------|-------------------|-------|
-| `GET /fred/tags` | `list` | `fred_tag(operation="list")` | `get_tags()` | Get all tags |
-| `GET /fred/tags/series` | `get_series` | `fred_tag(operation="get_series", tag_names="gdp;quarterly")` | `get_tags_series(tag_names)` | Series matching tags |
-| `GET /fred/related_tags` | `get_related_tags` | `fred_tag(operation="get_related_tags", tag_names="gdp")` | `get_related_tags(tag_names)` | Related tags |
+| FRED API Endpoint | MCP Tool | Tier | Tool Call Example | Notes |
+|-------------------|----------|------|-------------------|-------|
+| `GET /fred/tags` | `fred_tag_list` | discovery | `fred_tag_list(limit=100)` | Get all tags |
+| `GET /fred/tags/series` | `fred_tag_series` | discovery | `fred_tag_series(tag_names="gdp;quarterly")` | Series matching tags |
+| `GET /fred/related_tags` | `fred_tag_related` | discovery | `fred_tag_related(tag_names="gdp")` | Related tags |
 
 **Architecture Reference:** [ARCHITECTURE.md → MCP Tool Design](ARCHITECTURE.md#mcp-tool-design)
-**TODO Reference:** [TODO.md → Phase 4 → Tag Tool](TODO.md#tag-tool)
 
 ---
 
@@ -163,18 +147,18 @@ This document provides a comprehensive mapping between FRED API endpoints, MCP t
 
 **⚠️ CRITICAL: Large Data Handling Required**
 
-**MCP Tool:** `fred_maps`
-**Implementation File:** `src/mcp_fred/tools/maps.py`
+**MCP Tools:** `fred_maps_*` (4 tools)
+**Implementation File:** `src/mcp_fred/servers/maps.py`
 **API Client File:** `src/mcp_fred/api/endpoints/maps.py`
 
 **Note:** Maps API uses different base path (`/geofred` instead of `/fred`)
 
-| FRED API Endpoint | MCP Operation | Tool Call Example | API Client Method | Large Data Risk | Notes |
-|-------------------|---------------|-------------------|-------------------|-----------------|-------|
-| `GET /geofred/shapes/file` | `get_shapes` | `fred_maps(operation="get_shapes", shape="state")` | `get_shapes(shape)` | **HIGH** | **Shape files with geo data** |
-| `GET /geofred/series/group` | `get_series_group` | `fred_maps(operation="get_series_group", series_id="SMU56000000500000001a")` | `get_series_group(series_id)` | Medium | Series group metadata |
-| `GET /geofred/regional/data` | `get_regional_data` | `fred_maps(operation="get_regional_data")` | `get_regional_data()` | **HIGH** | **Regional economic data** |
-| `GET /geofred/series/data` | `get_series_data` | `fred_maps(operation="get_series_data", series_id="SMU56000000500000001a")` | `get_series_data(series_id)` | **HIGH** | **Series data for maps** |
+| FRED API Endpoint | MCP Tool | Tier | Tool Call Example | Large Data Risk | Notes |
+|-------------------|----------|------|-------------------|-----------------|-------|
+| `GET /geofred/shapes/file` | `fred_maps_shapes` | data | `fred_maps_shapes(shape="state")` | **HIGH** | **Shape files with geo data** |
+| `GET /geofred/series/group` | `fred_maps_series_group` | data | `fred_maps_series_group(series_id="SMU56000000500000001a")` | Medium | Series group metadata |
+| `GET /geofred/regional/data` | `fred_maps_regional_data` | data | `fred_maps_regional_data(series_group="882")` | **HIGH** | **Regional economic data** |
+| `GET /geofred/series/data` | `fred_maps_series_data` | data | `fred_maps_series_data(series_id="SMU56000000500000001a")` | **HIGH** | **Series data for maps** |
 
 ### Critical Implementation Requirements
 
@@ -204,37 +188,49 @@ This document provides a comprehensive mapping between FRED API endpoints, MCP t
 
 ## Job Management Tools
 
-**Not FRED API endpoints** - Internal MCP server functionality
+**Not FRED API endpoints** - Internal MCP server functionality (Tier: admin)
 
-| MCP Tool | Implementation File | Purpose | Architecture Reference |
-|----------|---------------------|---------|----------------------|
-| `fred_job_status` | `src/mcp_fred/tools/job_status.py` | Check status of background jobs | [ARCHITECTURE.md → Async Job Management Tool](ARCHITECTURE.md#fred_job_status-tool) |
-| `fred_job_list` | `src/mcp_fred/tools/job_list.py` | List recent jobs (optional) | [ARCHITECTURE.md → fred_job_list Tool](ARCHITECTURE.md#fred_job_list-tool-optional) |
-| `fred_job_cancel` | `src/mcp_fred/tools/job_cancel.py` | Cancel running jobs (optional) | [ARCHITECTURE.md → fred_job_cancel Tool](ARCHITECTURE.md#fred_job_cancel-tool-optional) |
+| MCP Tool | Implementation File | Tier | Purpose |
+|----------|---------------------|------|---------|
+| `fred_job_status` | `src/mcp_fred/servers/admin.py` | admin | Check status of background jobs |
+| `fred_job_list` | `src/mcp_fred/servers/admin.py` | admin | List recent jobs with filtering |
+| `fred_job_cancel` | `src/mcp_fred/servers/admin.py` | admin | Cancel running background jobs |
 
 - `fred_job_status` surfaces job metadata (progress, result, error, timestamps) for a single background operation.
 - `fred_job_list` supports filtering by status, pagination (`limit`, `offset`), and sorts jobs by most recent update.
 - `fred_job_cancel` marks a job as `cancelled` and records the optional user-supplied reason.
 
-**TODO Reference:** [TODO.md → Phase 4 → Job Management Tools](TODO.md#job-management-tools)
+**Activation:** Call `activate_admin_tools()` to enable these tools.
 
 ---
 
 ## Project Management Tools
 
-**Not FRED API endpoints** - Internal MCP server functionality
+**Not FRED API endpoints** - Internal MCP server functionality (Tier: admin)
 
-| MCP Tool | Implementation File | Purpose | Architecture Reference |
-|----------|---------------------|---------|----------------------|
-| `fred_project_list` | `src/mcp_fred/tools/project_list.py` | List all projects in storage directory | [ARCHITECTURE.md → fred_project_list Tool](ARCHITECTURE.md#fred_project_list-tool) |
-| `fred_project_create` | `src/mcp_fred/tools/project_create.py` | Create new project directory | [ARCHITECTURE.md → fred_project_create Tool](ARCHITECTURE.md#fred_project_create-tool) |
-| `fred_project_files` | `src/mcp_fred/tools/project_files.py` | List files in a project | [ARCHITECTURE.md → fred_project_files Tool](ARCHITECTURE.md#fred_project_files-tool) |
+| MCP Tool | Implementation File | Tier | Purpose |
+|----------|---------------------|------|---------|
+| `fred_project_list` | `src/mcp_fred/servers/admin.py` | admin | List all projects in storage directory |
+| `fred_project_create` | `src/mcp_fred/servers/admin.py` | admin | Create new project directory |
 
 - `fred_project_list` returns aggregate metadata (`file_count`, `total_size_bytes`, `latest_modified`) for each project under `FRED_STORAGE_DIR`.
 - `fred_project_create` scaffolds the canonical subdirectories (series, maps, releases, categories, sources, tags) and writes `.project.json` metadata.
-- `fred_project_files` supports `subdir`, `sort_by` (`name`, `size`, `modified`), and pagination (`limit`, `offset`) while returning per-file size and timestamps.
 
-**TODO Reference:** [TODO.md → Phase 4 → Project Management Tools](TODO.md#project-management-tools)
+**Activation:** Call `activate_admin_tools()` to enable these tools.
+
+---
+
+## Activation Tools
+
+**Always visible** - Used to enable additional tool tiers for progressive disclosure
+
+| MCP Tool | Implementation File | Purpose |
+|----------|---------------------|---------|
+| `activate_data_tools` | `src/mcp_fred/servers/admin.py` | Enable data retrieval tools (tier:data) |
+| `activate_advanced_tools` | `src/mcp_fred/servers/admin.py` | Enable advanced query tools (tier:advanced) |
+| `activate_admin_tools` | `src/mcp_fred/servers/admin.py` | Enable job/project management tools (tier:admin) |
+| `activate_all_tools` | `src/mcp_fred/servers/admin.py` | Enable all tool tiers at once |
+| `list_tool_tiers` | `src/mcp_fred/servers/admin.py` | Show available tool categories and how to activate them |
 
 ---
 
@@ -242,17 +238,18 @@ This document provides a comprehensive mapping between FRED API endpoints, MCP t
 
 **Supporting infrastructure for tools**
 
-| Component | Implementation File | Purpose | Used By | Architecture Reference |
-|-----------|---------------------|---------|---------|----------------------|
-| Token Estimator | `src/mcp_fred/utils/token_estimator.py` | Estimate token count using tiktoken | All tools (auto mode) | [ARCHITECTURE.md → Token Estimation](ARCHITECTURE.md#token-estimation) |
-| JSON to CSV Converter | `src/mcp_fred/utils/json_to_csv.py` | Convert FRED JSON to CSV | All tools (CSV output) | [ARCHITECTURE.md → JSON to CSV Conversion](ARCHITECTURE.md#file-formats--json-to-csv-conversion) |
-| File Writer | `src/mcp_fred/utils/file_writer.py` | Stream data to CSV/JSON files | All tools (file output) | [ARCHITECTURE.md → Streaming to Files](ARCHITECTURE.md#streaming-to-files) |
-| Path Resolver | `src/mcp_fred/utils/path_resolver.py` | Secure path resolution | All tools (file output) | [ARCHITECTURE.md → Security & Validation](ARCHITECTURE.md#security--validation) |
-| Job Manager | `src/mcp_fred/utils/job_manager.py` | Async job tracking | Series, Maps tools | [ARCHITECTURE.md → Async Job Architecture](ARCHITECTURE.md#async-job-architecture) |
-| Background Worker | `src/mcp_fred/utils/background_worker.py` | Background job processing | Series, Maps tools | [ARCHITECTURE.md → Async Job Architecture](ARCHITECTURE.md#async-job-architecture) |
-| Output Handler | `src/mcp_fred/utils/output_handler.py` | Smart output routing | All tools | [ARCHITECTURE.md → Output Handler Integration](ARCHITECTURE.md#output-handler-integration) |
+| Component | Implementation File | Purpose | Used By |
+|-----------|---------------------|---------|---------|
+| Smart Output | `src/mcp_fred/servers/common.py` | Intelligent output routing (screen vs file) | All FastMCP tools |
+| Token Estimator | `src/mcp_fred/utils/token_estimator.py` | Estimate token count using tiktoken | smart_output |
+| JSON to CSV Converter | `src/mcp_fred/utils/json_to_csv.py` | Convert FRED JSON to CSV | smart_output |
+| File Writer | `src/mcp_fred/utils/file_writer.py` | Stream data to CSV/JSON files | smart_output |
+| Path Resolver | `src/mcp_fred/utils/path_resolver.py` | Secure path resolution | File operations |
+| Job Manager | `src/mcp_fred/utils/job_manager.py` | Async job tracking | Series, Maps tools |
+| Background Worker | `src/mcp_fred/utils/background_worker.py` | Background job processing | Series, Maps tools |
+| Output Handler | `src/mcp_fred/utils/output_handler.py` | Legacy output routing | Legacy tools only |
 
-**TODO Reference:** [TODO.md → Phase 3 → Large Data Handling Utilities](TODO.md#large-data-handling-utilities)
+**Architecture Reference:** [ARCHITECTURE.md → Large Data Handling Strategy](ARCHITECTURE.md#large-data-handling-strategy)
 
 ---
 
@@ -382,5 +379,5 @@ ruff format src/mcp_fred/tools/series.py
 
 ---
 
-**Last Updated:** 2025-10-08
-**Document Version:** 1.0 (Phase 0.4 Complete)
+**Last Updated:** 2026-01-21
+**Document Version:** 2.0 (FastMCP 3.0.0b1 Migration)
