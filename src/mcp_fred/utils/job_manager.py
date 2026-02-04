@@ -6,11 +6,11 @@ import asyncio
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class JobStatus(str, Enum):
+class JobStatus(StrEnum):
     ACCEPTED = "accepted"
     PROCESSING = "processing"
     COMPLETED = "completed"
