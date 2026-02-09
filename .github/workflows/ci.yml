@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main, dev ]
 
+
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -14,7 +18,7 @@ jobs:
         python-version: ["3.11", "3.12"]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
     - name: Install uv
       uses: astral-sh/setup-uv@v3
@@ -57,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
     - name: Install uv
       uses: astral-sh/setup-uv@v3
