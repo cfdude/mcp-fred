@@ -4,12 +4,12 @@ on:
   pull_request:
     types: [opened, synchronize]
     # Skip when workflow files are modified (can't validate workflow changes until merged to main)
-    paths-ignore:
+      paths-ignore:
       - '.github/workflows/claude-code-review.yml'
       - '.github/workflows/claude.yml'
     # Optional: Only run on specific file changes
     # paths:
-    #   - "src/**/*.ts"
+    #    - "src/**/*.ts"
     #   - "src/**/*.tsx"
     #   - "src/**/*.js"
     #   - "src/**/*.jsx"
@@ -61,7 +61,7 @@ jobs:
         timeout-minutes: 10  # Individual step timeout
         env:
           ACTIONS_STEP_DEBUG: true  # Enable verbose logging
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics\/claude-code-action@26ec041249acb0a944c0a47b6c0c13f05dbc5b44  # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
